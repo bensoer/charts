@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "price-buddy.fullname" . }}-scraper
+  labels:
+    app.kubernetes.io/name: {{ include "price-buddy.name" . }}-scraper
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    helm.sh/chart: {{ include "price-buddy.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: scraper
+spec:
+  replicas: {{ .Values.scraper.replicas | default 1 }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "price-buddy.name" . }}-scraper
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "price-buddy.name" . }}-scraper
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: scraper
+    spec:
+      serviceAccountName: {{ include "price-buddy.serviceAccountName" . }}
+      containers:
+        - name: scraper
+          image: "amerkurev/scrapper:latest"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+          {{- with .Values.scraper.env }}
+          env:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.scraper.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .Values.scraper.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.scraper.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.scraper.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

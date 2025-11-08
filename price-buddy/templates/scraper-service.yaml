@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "price-buddy.fullname" . }}-scraper
+  labels:
+    app.kubernetes.io/name: {{ include "price-buddy.name" . }}-scraper
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    helm.sh/chart: {{ include "price-buddy.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: scraper
+spec:
+  type: {{ .Values.scraper.service.type | default "ClusterIP" }}
+  ports:
+    - name: http
+      port: {{ .Values.scraper.service.port | default 3000 }}
+      targetPort: 3000
+      protocol: TCP
+      {{- if and (eq (.Values.scraper.service.type | default "ClusterIP") "NodePort") .Values.scraper.service.nodePort }}
+      nodePort: {{ .Values.scraper.service.nodePort }}
+      {{- end }}
+  selector:
+    app.kubernetes.io/name: {{ include "price-buddy.name" . }}-scraper
+    app.kubernetes.io/instance: {{ .Release.Name }}
