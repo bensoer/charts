@@ -36,7 +36,7 @@ spec:
           securityContext:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          image: "https://hub.docker.com/jez500/pricebuddy:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          image: "hub.docker.com/jez500/pricebuddy:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
             {{- if .Values.cnpgCluster.enabled }}
