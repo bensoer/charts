@@ -93,14 +93,9 @@ spec:
           {{- end }}
           
           volumeMounts:
-            {{- if .Values.configEnvFromSecret.enabled }}
-            - name: dot-env-volume
-              mountPath: /app
-            {{- else }}
             - name: dot-env-volume
               mountPath: /app/.env
               subPath: .env
-            {{- end }}
             - name: storage-volume
               mountPath: /app/storage
           {{- with .Values.volumeMounts }}
