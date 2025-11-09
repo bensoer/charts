@@ -81,11 +81,12 @@ readinessProbe:
   httpGet:
     path: /
     port: http
-  initialDelaySeconds: 120
+  initialDelaySeconds: 60
   periodSeconds: 10
   timeoutSeconds: 3
   failureThreshold: 3
   successThreshold: 1
+
 # Additional volumes on the output Deployment definition.
 volumes: []
 # - name: foo
