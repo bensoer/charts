@@ -5,3 +5,5 @@ metadata:
 data:
   .env: |
     CACHE_STORE=file
+    APP_ENV=local
+    ANN_DEBUG=true
