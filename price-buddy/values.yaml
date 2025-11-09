@@ -65,15 +65,27 @@ resources: {}
   #   memory: 128Mi
 
 # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
-livenessProbe: {}
-#  httpGet:
-#    path: /
-#    port: http
-readinessProbe: {}
-#  httpGet:
-#    path: /
-#    port: http
 
+# Liveliness determines whether the pod is dying or not and needs to be restarted
+livenessProbe:
+  httpGet:
+    path: /
+    port: http
+  initialDelaySeconds: 150
+  periodSeconds: 30
+  timeoutSeconds: 15
+  failureThreshold: 5
+
+# Readiness determines whether to route traffic from the service to this pod
+readinessProbe:
+  httpGet:
+    path: /
+    port: http
+  initialDelaySeconds: 120
+  periodSeconds: 10
+  timeoutSeconds: 3
+  failureThreshold: 3
+  successThreshold: 1
 # Additional volumes on the output Deployment definition.
 volumes: []
 # - name: foo

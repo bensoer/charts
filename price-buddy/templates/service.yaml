@@ -11,9 +11,5 @@ spec:
       targetPort: http
       protocol: TCP
       name: http
-    - port: 443
-      targetPort: https
-      protocol: TCP
-      name: https
   selector:
     {{- include "price-buddy.selectorLabels" . | nindent 4 }}
