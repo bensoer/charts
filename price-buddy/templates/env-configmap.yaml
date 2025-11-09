@@ -3,4 +3,5 @@ kind: ConfigMap
 metadata:
   name: {{ include "price-buddy.fullname" . }}-env-config
 data:
-  .env: ""
+  .env: |
+    CACHE_DRIVER=file
