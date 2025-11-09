@@ -93,24 +93,32 @@ spec:
           {{- end }}
           
           volumeMounts:
+            {{- if .Values.configEnvFromSecret.enabled }}
+            - name: dot-env-volume
+              mountPath: /app
+            {{- else }}
             - name: dot-env-volume
               mountPath: /app/.env
               subPath: .env
+            {{- end }}
             - name: storage-volume
               mountPath: /app/storage
           {{- with .Values.volumeMounts }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
       volumes:
-        {{ - if .Values.configEnvFromSecret.enabled }}
+        {{- if .Values.configEnvFromSecret.enabled }}
         - name: dot-env-volume
           secret:
-            secretName: {{ .Values.configEnvFromSecret.name }}  
-        {{- else -}}
+            secretName: {{ .Values.configEnvFromSecret.secretName }}  
+            items:
+              - key: {{ .Values.configEnvFromSecret.secretKey }}
+                path: .env
+        {{- else }}
         - name: dot-env-volume
           configMap:
             name: {{ include "price-buddy.fullname" . }}-env-config
-        {{- end -}}-}}
+        {{- end }}
 
         - name: storage-volume
           persistentVolumeClaim:
