@@ -102,9 +102,16 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
       volumes:
+        {{ - if .Values.configEnvFromSecret.enabled }}
+        - name: dot-env-volume
+          secret:
+            secretName: {{ .Values.configEnvFromSecret.name }}  
+        {{- else -}}
         - name: dot-env-volume
           configMap:
             name: {{ include "price-buddy.fullname" . }}-env-config
+        {{- end -}}-}}
+
         - name: storage-volume
           persistentVolumeClaim:
             claimName: {{ template "price-buddy.fullname" . }}-storage-pvc

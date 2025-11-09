@@ -1,3 +1,4 @@
+{{- if not .Values.configEnvFromSecret.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -5,5 +6,5 @@ metadata:
 data:
   .env: |
     CACHE_STORE=file
-    APP_ENV=local
-    ANN_DEBUG=true
+    APP_KEY=
+{{- end }}

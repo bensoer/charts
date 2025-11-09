@@ -104,6 +104,14 @@ cnpgCluster:
   storageClass: synology-nas-csi-iscsi-retain
   size: 10Gi
 
+# Whether to load in .env from an existing secret. IF false, a premade ConfigMap is used instead
+configEnvFromSecret:
+  enabled: false
+  # Name of the secret
+  secretName: price-buddy-env-secret
+  # Key inside of the secret that contains the .env contents
+  secretKey: .env
+
 persistence:
   annotations: {}
   storageClass: synology-nas-csi-iscsi-retain
