@@ -4,4 +4,4 @@ metadata:
   name: {{ include "price-buddy.fullname" . }}-env-config
 data:
   .env: |
-    CACHE_DRIVER=file
+    CACHE_STORE=file
