@@ -48,8 +48,8 @@ spec:
             - name: DB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "price-buddy.fullname" . }}-price-buddy-user-secret
-                  key: password
+                  name: {{ include "price-buddy.fullname" . }}-custom-user-secret
+                  key: price-buddy-user
             - name: DB_DATABASE
               value: price-buddy
             - name: DB_PORT
