@@ -39,6 +39,13 @@ spec:
           image: "docker.io/jez500/pricebuddy:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
+          # If scraper is enabled, then we can supply the location automatically
+          {{- if .Values.scraper.enabled }}
+            - name: SCRAPER_BASE_URL
+              value: http://{{ include "price-buddy.fullname" . }}-scraper:{{ .Values.scraper.service.port | default 3000 }}
+          {{- end }}
+          # If were using Percona, then we can supply these credentials automatically
+          {{- if .Values.perconaMySQLDatabase.enabled }}
             - name: DB_CONNECTION
               value: mysql
             - name: DB_HOST
@@ -54,11 +61,9 @@ spec:
               value: pricebuddy
             - name: DB_PORT
               value: "3306"
-
-            - name: SCRAPER_BASE_URL
-              value: http://{{ include "price-buddy.fullname" . }}-scraper:{{ .Values.scraper.service.port | default 3000 }}
-            - name: AFFILIATE_ENABLED
-              value: "true"
+          {{- end }}
+          # Otherwise the user may have their own environment variables to set. If supplying their own MYSQL they will
+          # Need to populae the DB_* variables here
             {{- with .Values.env }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
@@ -103,8 +108,8 @@ spec:
         {{- end }}
 
         - name: storage-volume
-          persistentVolumeClaim:
-            claimName: {{ template "price-buddy.fullname" . }}-storage-pvc
+          emptyDir:
+            sizeLimit: {{ .Values.persistence.size }}
       {{- with .Values.volumes }}
         {{- toYaml . | nindent 8 }}
       {{- end }}

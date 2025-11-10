@@ -1,6 +1,5 @@
 # Default values for price-buddy.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
+
 
 # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
 replicaCount: 1
@@ -106,13 +105,34 @@ tolerations: []
 
 affinity: {}
 
+# ==================================================================================
+# Environment Variable Configuration
+# - Pass environment variables directly to the PriceBuddy application container
+# - You can also pass secrets and configmaps as environment variables here
+# ===================================================================================
 env:
   - name: APP_USER_EMAIL
     value: admin@soernet.ca
   - name: APP_USER_PASSWORD
     value: password
+  - name: AFFILIATE_ENABLED
+    value: "true"
 
+
+# ==============================================
+# Laraval .env File Configuration
+#
 # Whether to load in .env from an existing secret. IF false, a premade ConfigMap is used instead
+# IF enabled:
+# 1) Create a secret with a key containing the .env file contents (APP_KEY and CACHE_STORE=file at minimum)
+# 2) Set the secret name and key below
+
+# IF disabled:
+# 1) Generate your APP_KEY using "php artisan key:generate --show"
+# 2) Find the [release-name]-price-buddy-env-config ConfigMap in the namespace you deployed this helm chart
+# 3) Update the APP_KEY value in the .env data field with the key generated in step 1
+#
+# ===============================================
 configEnvFromSecret:
   enabled: false
   # Name of the secret
@@ -120,15 +140,27 @@ configEnvFromSecret:
   # Key inside of the secret that contains the .env contents
   secretKey: .env
 
-# Database persistence configuration
-persistence:
-  username: price_buddy_user
-  databaseName: price_buddy
+
+# ===========================================================================================================================
+# Percona MySQL Database Configuration
+# - Configure if your k8s cluster is running the Persona MySQL Operator and want to use it to provision your MySQL Database
+
+# - IF have your own MySQL, set perconaMySQLDatabase.enabled to "false" and then configure DB_* env variables in the "env" section above
+# ============================================================================================================================
+perconaMySQLDatabase:
+  enabled: false
   storageClass: synology-nas-csi-iscsi-retain
   accessMode: ReadWriteOnce
   size: 10Gi
 
+
+# Persistence for PriceBuddy cache / storage / file config
+persistence:
+  size: 10Gi
+
+
 scraper:
+  enabled: true
   service:
     type: ClusterIP
     port: 3000

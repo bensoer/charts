@@ -1,3 +1,4 @@
+{{- if .Values.scraper.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -21,3 +22,4 @@ spec:
   selector:
     app.kubernetes.io/name: {{ include "price-buddy.name" . }}-scraper
     app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}

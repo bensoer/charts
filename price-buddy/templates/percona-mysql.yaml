@@ -1,3 +1,4 @@
+{{- if .Values.perconaMySQLDatabase.enabled }}
 apiVersion: pxc.percona.com/v1
 kind: PerconaXtraDBCluster
 metadata:
@@ -20,10 +21,10 @@ spec:
     volumeSpec:
       persistentVolumeClaim:
         accessModes: [ "ReadWriteOnce" ]    
-        storageClassName: {{ .Values.persistence.storageClass}}
+        storageClassName: {{ .Values.perconaMySQLDatabase.storageClass}}
         resources:
           requests:
-            storage: {{ .Values.persistence.size }}
+            storage: {{ .Values.perconaMySQLDatabase.size }}
   users:
     - name: pricebuddyuser
       dbs:
@@ -39,3 +40,4 @@ spec:
     enabled: false
   pmm:
     enabled: false
+{{- end }}
