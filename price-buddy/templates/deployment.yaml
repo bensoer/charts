@@ -39,39 +39,26 @@ spec:
           image: "docker.io/jez500/pricebuddy:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
-            {{- if .Values.cnpgCluster.enabled }}
             - name: DB_CONNECTION
-              value: pgsql
+              value: mysql
             - name: DB_HOST
-              valueFrom:
-                secretKeyRef:
-                  name: price-buddy-cluster-app
-                  key: host
+              value: {{ include "price-buddy.fullname" . }}-pxc.{{ .Release.Namespace }}.svc.cluster.local
             - name: DB_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: price-buddy-cluster-app
-                  key: username
+              value: price_buddy_user
             - name: DB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: price-buddy-cluster-app
+                  name: {{ include "price-buddy.fullname" . }}-price_buddy_user-secret
                   key: password
             - name: DB_DATABASE
-              valueFrom:
-                secretKeyRef:
-                  name: price-buddy-cluster-app
-                  key: dbname
+              value: price_buddy
             - name: DB_PORT
-              valueFrom:
-                secretKeyRef:
-                  name: price-buddy-cluster-app
-                  key: port
+              value: "3306"
+
             - name: SCRAPER_BASE_URL
               value: http://{{ include "price-buddy.fullname" . }}-scraper:{{ .Values.scraper.service.port | default 3000 }}
             - name: AFFILIATE_ENABLED
               value: "true"
-            {{- end }}
             {{- with .Values.env }}
             {{- toYaml . | nindent 12 }}
             {{- end }}

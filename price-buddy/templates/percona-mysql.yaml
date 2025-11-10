@@ -1,0 +1,39 @@
+apiVersion: pxc.percona.com/v1-13-0
+kind: PerconaXtraDBCluster
+metadata:
+  name: {{ include "price-buddy.fullname" . }}-cluster
+spec:
+  crVersion: 1.18.0
+  secretsName: {{ include "price-buddy.fullname" . }}-cluster-secrets
+  allowUnsafeConfigurations: true  # required for 1-node clusters
+  pxc:
+    size: 1
+    image: percona/percona-xtradb-cluster:8.0.36-29.1
+    autoRecovery: true
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "250m"
+    podDisruptionBudget:
+      minAvailable: 0
+    volumeSpec:
+      persistentVolumeClaim:
+        accessModes: [ "ReadWriteOnce" ]    
+        storageClassName: {{ .Values.persistence.storageClass}}
+        resources:
+          requests:
+            storage: {{ .Values.persistence.size }}
+    users:
+        - name: price_buddy_user
+          dbs:
+            - price_buddy
+  proxysql:
+    enabled: false
+  haproxy:
+    enabled: false
+  logCollector:
+    enabled: false
+  pmm:
+    enabled: false
+  monitor:
+    enabled: false

@@ -112,11 +112,6 @@ env:
   - name: APP_USER_PASSWORD
     value: password
 
-cnpgCluster:
-  enabled: true
-  storageClass: synology-nas-csi-iscsi-retain
-  size: 10Gi
-
 # Whether to load in .env from an existing secret. IF false, a premade ConfigMap is used instead
 configEnvFromSecret:
   enabled: false
@@ -125,17 +120,13 @@ configEnvFromSecret:
   # Key inside of the secret that contains the .env contents
   secretKey: .env
 
+# Database persistence configuration
 persistence:
-  annotations: {}
+  username: price_buddy_user
+  databaseName: price_buddy
   storageClass: synology-nas-csi-iscsi-retain
-
-  ## A manually managed Persistent Volume and Claim
-  ## Requires persistence.enabled: true
-  ## If defined, PVC must be created manually before volume will be bound
-  # existingClaim:
-
   accessMode: ReadWriteOnce
-  size: 5Gi
+  size: 10Gi
 
 scraper:
   service:
