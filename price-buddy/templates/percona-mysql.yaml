@@ -28,6 +28,9 @@ spec:
     - name: pricebuddyuser
       dbs:
       - pricebuddy
+      grants:
+        - ALL PRIVILEGES
+      withGrantOption: true
   proxysql:
     enabled: false
   haproxy:
