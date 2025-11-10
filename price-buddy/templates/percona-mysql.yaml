@@ -24,9 +24,9 @@ spec:
           requests:
             storage: {{ .Values.persistence.size }}
     users:
-        - name: price_buddy_user
+        - name: price-buddy-user
           dbs:
-            - price_buddy
+            - price-buddy
   proxysql:
     enabled: false
   haproxy:
