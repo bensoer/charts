@@ -44,14 +44,14 @@ spec:
             - name: DB_HOST
               value: {{ include "price-buddy.fullname" . }}-cluster-pxc.{{ .Release.Namespace }}.svc.cluster.local
             - name: DB_USERNAME
-              value: price-buddy-user
+              value: pricebuddyuser
             - name: DB_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: {{ include "price-buddy.fullname" . }}-cluster-custom-user-secret
-                  key: price-buddy-user
+                  key: pricebuddyuser
             - name: DB_DATABASE
-              value: price-buddy
+              value: pricebuddy
             - name: DB_PORT
               value: "3306"
 
