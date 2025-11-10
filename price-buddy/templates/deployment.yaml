@@ -48,7 +48,7 @@ spec:
             - name: DB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "price-buddy.fullname" . }}-custom-user-secret
+                  name: {{ include "price-buddy.fullname" . }}-cluster-custom-user-secret
                   key: price-buddy-user
             - name: DB_DATABASE
               value: price-buddy
