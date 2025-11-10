@@ -8,7 +8,6 @@ spec:
   allowUnsafeConfigurations: true  # required for 1-node clusters
   pxc:
     size: 1
-    image: percona/percona-xtradb-cluster:8.0.36-29.1
     autoRecovery: true
     resources:
       requests:
