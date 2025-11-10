@@ -32,9 +32,7 @@ spec:
     enabled: false
   haproxy:
     enabled: false
-  logCollector:
+  logcollector:
     enabled: false
   pmm:
-    enabled: false
-  monitor:
     enabled: false
