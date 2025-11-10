@@ -26,7 +26,6 @@ spec:
             storage: {{ .Values.persistence.size }}
   users:
     - name: price-buddy-user
-      passwordSecretRef: {}
       dbs:
       - price-buddy
   proxysql:
