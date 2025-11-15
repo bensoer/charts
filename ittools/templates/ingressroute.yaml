@@ -21,8 +21,7 @@ spec:
     priority: 10
     services:
     # Target a Kubernetes Support
-    - kind: Service
-      name: {{ .Values.ittools.fullnameOverride }}
+    - name: {{ .Values.ittools.fullnameOverride }}
       namespace: {{ .Release.Namespace }}
       # Customize the connection between Traefik and the backend
       passHostHeader: true
