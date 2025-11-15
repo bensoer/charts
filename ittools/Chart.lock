@@ -1,0 +1,6 @@
+dependencies:
+- name: it-tools
+  repository: https://charts.plcnk.net
+  version: 2.2.0
+digest: sha256:019d1c5fe04968b8c62ea9d35aac85f4ecdc6df8fa83237d0653975c608136b5
+generated: "2025-11-14T19:31:37.17859443-08:00"

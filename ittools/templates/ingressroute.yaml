@@ -1,0 +1,48 @@
+{{- if .Values.traefik.ingressRoute.enabled }}
+
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: ittools-ingress-route
+  namespace: {{ .Release.Namespace }}
+spec:
+  entryPoints:
+    - web
+  routes:
+  - kind: Rule
+    # Rule on the Host
+    match: Host(`{{ .Values.traefik.ingressRoute.domain }}`)
+    # Enable Router observability
+    observability:
+      accessLogs: true
+      metrics: true
+      tracing: true
+    # Set a priority
+    priority: 10
+    services:
+    # Target a Kubernetes Support
+    - kind: Service
+      name: {{ .Values.ittools.fullnameOverride }}
+      namespace: {{ .Release.Namespace }}
+      # Customize the connection between Traefik and the backend
+      passHostHeader: true
+      port: 8080
+      responseForwarding:
+        flushInterval: 1ms
+      scheme: http
+      weight: 10
+  # tls:
+  #   # Generate a TLS certificate using a certificate resolver
+  #   certResolver: foo
+  #   domains:
+  #   - main: example.net
+  #     sans:
+  #     - a.example.net
+  #     - b.example.net
+  #   # Customize the TLS options
+  #   options:
+  #     name: opt
+  #     namespace: apps
+  #   # Add a TLS certificate from a Kubernetes Secret
+  #   secretName: supersecret
+{{- end }}

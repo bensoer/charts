@@ -1,0 +1,9 @@
+
+ittools:
+  fullnameOverride: ittools
+
+
+traefik:
+  ingressRoute:
+    enabled: true
+    domain: ittools.intra.soernet.ca
