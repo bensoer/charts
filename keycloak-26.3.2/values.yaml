@@ -1,0 +1,25 @@
+
+
+cnpgDatabase:
+  enabled: true
+  storageClass: synology-nas-csi-iscsi-retain
+  size: 1Gi
+  instances: 1
+
+adminCredentials:
+  explicite:
+    enabled: false
+    username: ""
+    password: ""
+  existingSecret:
+    enabled: false
+    name: keycloak-admin-credentials
+    usernameKey: KEYCLOAK_ADMIN_USER
+    passwordKey: KEYCLOAK_ADMIN_PASSWORD
+  eso:
+    enabled: true
+    secretStore:
+      name: aws-use1-parameter-store-cluster-secret-store
+      kind: ClusterSecretStore
+    usernameRemoteRefKey: /k3s-homelab/keycloak/bootstrap/username
+    passwordRemoteRefKey: /k3s-homelab/keycloak/bootstrap/password
