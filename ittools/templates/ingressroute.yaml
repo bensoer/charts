@@ -22,7 +22,7 @@ spec:
     services:
     # Target a Kubernetes Support
     - kind: Service
-      name: {{ .Values.ittools.fullnameOverride }}
+      name: {{ .Values.ittools.fullnameOverride }}.{{ .Release.Namespace }}.svc.cluster.local
       namespace: {{ .Release.Namespace }}
       # Customize the connection between Traefik and the backend
       passHostHeader: true
