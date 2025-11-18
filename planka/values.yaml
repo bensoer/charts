@@ -18,7 +18,7 @@ planka:
   # Use this value if you are using the cnpgDatabase option below
   existingDburlSecret: planka-cluster-app
 
-  extraEnvs:
+  extraEnv:
     - name: TRUST_PROXY
       value: "1"
 
