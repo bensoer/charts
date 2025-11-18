@@ -1,5 +1,7 @@
 
 planka:
+  fullnameOverride: planka
+
   image:
     tag: 1.26.3
 
@@ -30,3 +32,8 @@ cnpgDatabase:
   storageClass: synology-nas-csi-iscsi-retain
   size: 10Gi
   instances: 1
+
+traefik:
+  ingressRoute:
+    enabled: true
+    domain: planka.intra.soernet.ca

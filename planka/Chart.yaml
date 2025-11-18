@@ -27,5 +27,5 @@ appVersion: "0.2.25"
 dependencies:
   - name: planka # The name of the dependent chart
     version: 0.2.25            # The version of the dependent chart
-    repository: http://plankanban.github.io/planka # The URL of the chart repository
+    repository: https://plankanban.github.io/planka # The URL of the chart repository
     alias: planka
