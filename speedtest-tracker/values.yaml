@@ -122,3 +122,8 @@ dnsConfig:
   options:
     - name: ndots
       value: "5"
+
+traefik:
+  ingressRoute:
+    enabled: true
+    domain: speedtest-tracker.intra.soernet.ca
