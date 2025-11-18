@@ -165,3 +165,7 @@ scraper:
     type: ClusterIP
     port: 3000
   
+traefik:
+  ingressRoute:
+    enabled: true
+    domain: pricebuddy.intra.soernet.ca
