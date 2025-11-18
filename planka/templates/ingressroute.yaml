@@ -25,7 +25,7 @@ spec:
       namespace: {{ .Release.Namespace }}
       # Customize the connection between Traefik and the backend
       passHostHeader: true
-      port: 8080
+      port: 1337
       responseForwarding:
         flushInterval: 1ms
       scheme: http
