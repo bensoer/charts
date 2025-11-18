@@ -20,7 +20,7 @@ planka:
 
   extraEnv:
     - name: TRUST_PROXY
-      value: "1"
+      value: "true"
 
   
 credentialsFromESO:
