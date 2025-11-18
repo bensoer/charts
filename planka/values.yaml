@@ -1,0 +1,32 @@
+
+planka:
+  image:
+    tag: 1.26.3
+
+  # Don't use the bundled postgresql
+  postgresql:
+    enabled: false
+
+  # Use these values if credentialsFromESO is enabled
+  existingSecretkeySecret: planka-credentials
+  existingAdminCredsSecret: planka-credentials
+
+  # Use this value if you are using the cnpgDatabase option below
+  existingDburlSecret: planka-cluster-app
+
+  
+credentialsFromESO:
+  enabled: true
+  secretStoreRef:
+    name: aws-use1-parameter-store-cluster-secret-store
+    kind: ClusterSecretStore
+  keyRemoteRefKey: /k3s-homelab/planka/key
+  adminUsernameRemoteRefKey: /k3s-homelab/planka/admin_username
+  adminPasswordRemoteRefKey: /k3s-homelab/planka/admin_password
+
+
+cnpgDatabase:
+  enabled: true
+  storageClass: synology-nas-csi-iscsi-retain
+  size: 1Gi
+  instances: 1

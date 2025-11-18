@@ -1,0 +1,16 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: planka-cluster
+  namespace: {{ .Release.Namespace }}
+spec:
+  instances: {{ .Values.cnpgDatabase.instances }}
+
+  bootstrap:
+    initdb:
+      database: planka
+      owner: planka
+
+  storage:
+    size: {{ .Values.cnpgDatabase.size }}
+    storageClass: {{ .Values.cnpgDatabase.storageClass }}
