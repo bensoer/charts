@@ -33,6 +33,13 @@ spec:
           image: "lscr.io/linuxserver/speedtest-tracker:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
+            {{- if .Values.appKeyFromESO.enabled }}
+            - name: APP_KEY
+              valueFrom:
+                  secretKeyRef:
+                    name: speedtest-tracker-credentials
+                    key: APP_KEY
+            {{- end }}
             {{- with .Values.env }}
             {{- toYaml . | nindent 12 }}
             {{- end }}

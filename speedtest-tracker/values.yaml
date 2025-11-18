@@ -98,14 +98,21 @@ tolerations: []
 
 affinity: {}
 
+appKeyFromESO:
+  enabled: false
+  secretStoreRef:
+    name: aws-use1-parameter-store-cluster-secret-store
+    kind: ClusterSecretStore
+  remoteRefKey: /k3s-homelab/speedtest-tracker/app-key
+
 # Environment variables to be added to the container
 env:
   - name: PUID
     value: "1000"
   - name: PGID
     value: "1000"
-  - name: APP_KEY
-    value: ABase64KeyStringFetchedFromTheWebsite
+#  - name: APP_KEY
+#    value: ABase64KeyStringFetchedFromTheWebsite
   - name: DB_CONNECTION
     value: sqlite
   - name: SPEEDTEST_SCHEDULE
