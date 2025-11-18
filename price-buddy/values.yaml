@@ -140,6 +140,14 @@ configEnvFromSecret:
   # Key inside of the secret that contains the .env contents
   secretKey: .env
 
+configEnvFromESO:
+  enabled: false
+  secretStoreRef:
+    name: aws-use1-parameter-store-cluster-secret-store
+    kind: ClusterSecretStore
+  remoteRefKey: /k3s-homelab/pricebuddy/env
+
+
 
 # ===========================================================================================================================
 # Percona MySQL Database Configuration

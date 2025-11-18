@@ -101,6 +101,13 @@ spec:
             items:
               - key: {{ .Values.configEnvFromSecret.secretKey }}
                 path: .env
+        {{- else if .Values.configEnvFromESO.enabled }}
+        - name: dot-env-volume
+          secret:
+            secretName: pricebuddy-env-config
+            items:
+              - key: .env
+                path: .env
         {{- else }}
         - name: dot-env-volume
           configMap:

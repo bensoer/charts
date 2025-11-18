@@ -1,0 +1,18 @@
+{{- if .Values.configEnvFromESO.enabled }}
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: pricebuddy-env-config
+  namespace: {{ .Release.Namespace }}
+spec:
+  refreshPolicy: OnChange
+
+  secretStoreRef:
+    name: {{ .Values.configEnvFromESO.secretStoreRef.name }}
+    kind: {{ .Values.configEnvFromESO.secretStoreRef.kind }}
+
+  data:
+    - secretKey: .env
+      remoteRef:
+        key: {{ .Values.configEnvFromESO.remoteRefKey }}
+{{- end }}
