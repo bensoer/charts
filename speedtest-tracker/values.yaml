@@ -103,7 +103,7 @@ appKeyFromESO:
   secretStoreRef:
     name: aws-use1-parameter-store-cluster-secret-store
     kind: ClusterSecretStore
-  remoteRefKey: /k3s-homelab/speedtest-tracker/app-key
+  remoteRefKey: /k3s-homelab/speedtest-tracker/app_key
 
 # Environment variables to be added to the container
 env:
