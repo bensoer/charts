@@ -22,9 +22,9 @@ credentialsFromESO:
   secretStoreRef:
     name: aws-use1-parameter-store-cluster-secret-store
     kind: ClusterSecretStore
-  keyRemoteRefKey: /k3s-homelab/planka/key
-  adminUsernameRemoteRefKey: /k3s-homelab/planka/admin_username
-  adminPasswordRemoteRefKey: /k3s-homelab/planka/admin_password
+  keyRemoteRefKey: /k3s-homelab/planka/credentials/key
+  adminUsernameRemoteRefKey: /k3s-homelab/planka/credentials/admin_username
+  adminPasswordRemoteRefKey: /k3s-homelab/planka/credentials/admin_password
 
 
 cnpgDatabase:
