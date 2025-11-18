@@ -126,4 +126,4 @@ dnsConfig:
 traefik:
   ingressRoute:
     enabled: true
-    domain: speedtest-tracker.intra.soernet.ca
+    domain: speedtest.intra.soernet.ca
