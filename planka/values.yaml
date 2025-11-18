@@ -28,5 +28,5 @@ credentialsFromESO:
 cnpgDatabase:
   enabled: true
   storageClass: synology-nas-csi-iscsi-retain
-  size: 1Gi
+  size: 10Gi
   instances: 1

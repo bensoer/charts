@@ -1,3 +1,4 @@
+{{- if .Values.cnpgDatabase.enabled }}
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
@@ -14,3 +15,4 @@ spec:
   storage:
     size: {{ .Values.cnpgDatabase.size }}
     storageClass: {{ .Values.cnpgDatabase.storageClass }}
+{{- end }}
