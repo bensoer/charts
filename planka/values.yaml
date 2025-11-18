@@ -2,7 +2,7 @@
 planka:
   fullnameOverride: planka
 
-  baseUrl: "planka.intra.soernet.ca"
+  baseUrl: http://planka.intra.soernet.ca
 
   image:
     tag: 1.26.3
