@@ -1,0 +1,16 @@
+
+stirlingpdf:
+
+  persistence:
+    enabled: true
+    storageClass: synology-nas-csi-iscsi-retain
+
+  serviceAccount:
+    create: true
+    name: stirlingpdf-sa
+
+
+traefik:
+  ingressRoute:
+    enabled: true
+    domain: stirlingpdf.intra.soernet.ca

@@ -1,0 +1,6 @@
+dependencies:
+- name: stirling-pdf-chart
+  repository: https://docs.stirlingpdf.com/Stirling-PDF-chart
+  version: 2.2.0
+digest: sha256:3e56e8ed26ce9dbf8cdd39f2c7135e154118a31ab1d32087f3ee8f8b8774aa07
+generated: "2025-11-18T21:36:48.923627909-08:00"
