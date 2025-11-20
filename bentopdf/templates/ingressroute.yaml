@@ -29,8 +29,8 @@ spec:
         flushInterval: 1ms
       scheme: http
       weight: 10
-    tls:
-      secretName: bentopdf-prod-cert
+  tls:
+    secretName: bentopdf-prod-cert
   # tls:
   #   # Generate a TLS certificate using a certificate resolver
   #   certResolver: foo
