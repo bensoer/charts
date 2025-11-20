@@ -1,0 +1,14 @@
+{{- if .Values.traefik.ingressRoute.enabled }}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: bentopdf-prod-cert
+spec:
+  commonName: {{ .Values.traefik.ingressRoute.domain }}
+  secretName: bentopdf-prod-cert
+  dnsNames:
+    - {{ .Values.traefik.ingressRoute.domain }}
+  issuerRef:
+    kind: Issuer
+    name: {{ .Values.traefik.ingressRoute.issuer }}
+{{- end }}

@@ -103,3 +103,4 @@ traefik:
   ingressRoute:
     enabled: true
     domain: bentopdf.intra.soernet.ca
+    issuer: letsencrypt-prod-cluster-issuer
