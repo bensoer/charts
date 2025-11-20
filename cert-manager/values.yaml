@@ -1,0 +1,35 @@
+certmanager:
+  crds:
+    enabled: true
+  prometheus:
+    enabled: false
+  
+  dns01RecursiveNameservers: "1.1.1.1:53,1.0.0.1:53,8.8.8.8:53,8.8.4.4:53"
+  dns01RecursiveNameserversOnly: false
+
+issuers:
+  clusterSelfSigned:
+    enabled: true
+  letsEncryptDevWithCloudflareDns01:
+    enabled: false
+    acmeEmail: user@example.com
+    cloudflare:
+      email: user@example.com
+      apiTokenSecretRef:
+          name: cloudflare-api-token
+          key: api-token
+  letsEncryptProdWithCloudflareDns01:
+    enabled: false
+    acmeEmail: user@example.com
+    cloudflare:
+      email: user@example.com
+      apiTokenSecretRef:
+          name: cloudflare-api-token
+          key: api-token
+
+cloudflareCredentialsFromESO:
+  enabled: false
+  secretStoreRef:
+    name: aws-use1-parameter-store-cluster-secret-store
+    kind: ClusterSecretStore
+  remoteRefKey: /k3s-homelab/certmanager/cloudflare-api-token

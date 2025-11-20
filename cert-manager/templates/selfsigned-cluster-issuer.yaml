@@ -1,0 +1,9 @@
+{{- if .Values.issuers.clusterSelfSigned.enabled }}
+# https://medium.com/geekculture/a-simple-ca-setup-with-kubernetes-cert-manager-bc8ccbd9c2
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: selfsigned-cluster-issuer
+spec:
+  selfSigned: {}
+{{- end }}

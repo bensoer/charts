@@ -1,0 +1,27 @@
+{{- if .Values.issuers.letsEncryptProdWithCloudflareDns01.enabled }}
+# https://cert-manager.io/docs/configuration/acme/dns01/cloudflare/
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+ name: letsencrypt-prod-cluster-issuer
+spec:
+ acme:
+   email: {{ .Values.issuers.letsEncryptProdWithCloudflareDns01.acmeEmail }}
+   server: https://acme-v02.api.letsencrypt.org/directory
+   privateKeySecretRef:
+     # if not existing, it will register a new account and stores it
+     name: letsencrypt-prod-cluster-issuer-pk
+   solvers:
+     - dns01:
+         cloudflare:
+          email: {{ .Values.issuers.letsEncryptProdWithCloudflareDns01.cloudflare.email }}
+          {{- if .Values.cloudflareCredentialsFromESO.enabled }}
+          apiTokenSecretRef:
+            name: cloudflare-credentials
+            key: api-token
+          {{- else }}
+          apiTokenSecretRef:
+            name: {{ .Values.issuers.letsEncryptProdWithCloudflareDns01.cloudflare.apiTokenSecretRef.name }}
+            key: {{ .Values.issuers.letsEncryptProdWithCloudflareDns01.cloudflare.apiTokenSecretRef.key }}
+          {{- end }}
+{{- end }}
