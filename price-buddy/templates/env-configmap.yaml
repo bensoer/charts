@@ -7,4 +7,8 @@ data:
   .env: |
     CACHE_STORE=file
     APP_KEY=
+    {{- if .Values.traefik.enabled }}
+    APP_URL=https://{{ .Values.traefik.ingressRoute.domain }}
+    ASSET_URL=https://{{ .Values.traefik.ingressRoute.domain }}
+    {{- end }}
 {{- end }}
