@@ -1,0 +1,14 @@
+{{- if .Values.traefik.ingressRoute.enabled }}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: speedtest-tracker-prod-cert
+spec:
+  commonName: {{ .Values.traefik.ingressRoute.domain }}
+  secretName: speedtest-tracker-prod-cert
+  dnsNames:
+    - {{ .Values.traefik.ingressRoute.domain }}
+  issuerRef:
+    kind: {{ .Values.traefik.ingressRoute.issuerKind }}
+    name: {{ .Values.traefik.ingressRoute.issuer }}
+{{- end }}

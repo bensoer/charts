@@ -134,3 +134,5 @@ traefik:
   ingressRoute:
     enabled: true
     domain: speedtest.intra.soernet.ca
+    issuer: letsencrypt-prod-cluster-issuer
+    issuerKind: ClusterIssuer

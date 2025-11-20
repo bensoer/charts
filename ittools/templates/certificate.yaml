@@ -1,0 +1,14 @@
+{{- if .Values.traefik.ingressRoute.enabled }}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: ittools-prod-cert
+spec:
+  commonName: {{ .Values.traefik.ingressRoute.domain }}
+  secretName: ittools-prod-cert
+  dnsNames:
+    - {{ .Values.traefik.ingressRoute.domain }}
+  issuerRef:
+    kind: {{ .Values.traefik.ingressRoute.issuerKind }}
+    name: {{ .Values.traefik.ingressRoute.issuer }}
+{{- end }}

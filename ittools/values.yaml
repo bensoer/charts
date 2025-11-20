@@ -7,3 +7,5 @@ traefik:
   ingressRoute:
     enabled: true
     domain: ittools.intra.soernet.ca
+    issuer: letsencrypt-prod-cluster-issuer
+    issuerKind: ClusterIssuer
