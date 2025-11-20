@@ -104,3 +104,4 @@ traefik:
     enabled: true
     domain: bentopdf.intra.soernet.ca
     issuer: letsencrypt-prod-cluster-issuer
+    issuerKind: ClusterIssuer

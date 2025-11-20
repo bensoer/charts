@@ -9,6 +9,6 @@ spec:
   dnsNames:
     - {{ .Values.traefik.ingressRoute.domain }}
   issuerRef:
-    kind: Issuer
+    kind: {{ .Values.traefik.ingressRoute.issuerKind }}
     name: {{ .Values.traefik.ingressRoute.issuer }}
 {{- end }}
