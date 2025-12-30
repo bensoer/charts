@@ -31,3 +31,7 @@ traefik:
     domain: idp.projectterris.com
     issuer: letsencrypt-prod-cluster-issuer
     issuerKind: ClusterIssuer
+
+service:
+  type: ClusterIP
+  port: 8080
