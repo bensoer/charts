@@ -113,7 +113,6 @@ spec:
           env:
             - name : SOCAT_LINK
               value: "false"
-      {{- with .Values.volumes }}
       volumes:
         # If persistence is enabled and no existing claim is specified, create a new PVC
         {{- if and .Values.persistence.enabled (not .Values.persistence.existingClaim) }}
@@ -132,7 +131,8 @@ spec:
             name: {{ include "gogs.fullname" . }}-ini-template
         - name: actual-config
           emptyDir: {}
-
+        # If there are any additional volumes to mount
+      {{- with .Values.volumes }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- with .Values.nodeSelector }}
