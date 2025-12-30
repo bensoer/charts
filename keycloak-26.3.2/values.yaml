@@ -23,3 +23,11 @@ adminCredentials:
       kind: ClusterSecretStore
     usernameRemoteRefKey: /k3s-homelab/keycloak/bootstrap/username
     passwordRemoteRefKey: /k3s-homelab/keycloak/bootstrap/password
+
+
+traefik:
+  ingressRoute:
+    enabled: true
+    domain: idp.projectterris.com
+    issuer: letsencrypt-prod-cluster-issuer
+    issuerKind: ClusterIssuer
