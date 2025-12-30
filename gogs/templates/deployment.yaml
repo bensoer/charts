@@ -35,7 +35,7 @@ spec:
 
       initContainers:
         - name: init-config
-          image: busybox:1.36
+          image: dibi/envsubst:1
           # We use 'sh' to replace variables in the template
           command: ['sh', '-c', 'envsubst < /tmp/template/app.ini.template > /tmp/actual/app.ini']
           env:
