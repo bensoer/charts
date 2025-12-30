@@ -32,6 +32,45 @@ spec:
       securityContext:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+
+      initContainers:
+        - name: init-config
+          image: busybox:1.36
+          # We use 'sh' to replace variables in the template
+          command: ['sh', '-c', 'envsubst < /tmp/template/app.ini.template > /tmp/actual/app.ini']
+          env:
+            # Secrets from the Postgres Operator
+            - name: 'DB_HOST'
+              valueFrom:
+                secretKeyRef:
+                  name: gogs-cluster-app
+                  key: host
+            - name: 'DB_NAME'
+              valueFrom:
+                secretKeyRef:
+                  name: gogs-cluster-app
+                  key: dbname
+            - name: 'DB_PASSWORD'
+              valueFrom:
+                secretKeyRef:
+                  name: gogs-cluster-app
+                  key: password
+            - name: 'DB_USER'
+              valueFrom:
+                secretKeyRef:
+                  name: gogs-cluster-app
+                  key: username
+            # Static secrets defined in your Helm values
+            - name: GOGS_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: secret-key
+                  key: secretKey
+          volumeMounts:
+            - name: config-template
+              mountPath: /tmp/template
+            - name: actual-config
+              mountPath: /tmp/actual
       containers:
         - name: {{ .Chart.Name }}
           {{- with .Values.securityContext }}
@@ -66,7 +105,9 @@ spec:
             - name: gogs-persistent-storage
               mountPath: /data
             {{- end }}
-            
+            - name: actual-config
+              mountPath: /data/gogs/conf/app.ini
+              subPath: app.ini
             {{- toYaml . | nindent 12 }}
           {{- end }}
           env:
@@ -86,6 +127,11 @@ spec:
           persistentVolumeClaim:
             claimName: {{ .Values.persistence.existingClaim }}
         {{- end }}
+        - name: config-template
+          configMap:
+            name: {{ include "gogs.fullname" . }}-ini-template
+        - name: actual-config
+          emptyDir: {}
 
         {{- toYaml . | nindent 8 }}
       {{- end }}
