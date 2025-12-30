@@ -124,7 +124,7 @@ persistence:
   ## If defined, PVC must be created manually before volume will be bound
   # existingClaim:
 
-  accessMode: ReadWriteOnce
+  accessMode: ReadWriteMany
   size: 50Gi
 
 cnpgDatabase:
