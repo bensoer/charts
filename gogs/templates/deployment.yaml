@@ -37,7 +37,16 @@ spec:
         - name: init-config
           image: dibi/envsubst:1
           # We use 'sh' to replace variables in the template
-          command: ['sh', '-c', 'envsubst < /tmp/template/app.ini.template > /tmp/actual/app.ini']
+          command:
+            - "sh"
+            - "-c"
+            - |
+              # Create the directory on the PVC
+              mkdir -p /data/gogs/conf
+              # Generate the file directly on the PVC
+              envsubst < /tmp/template/app.ini.template > /data/gogs/conf/app.ini
+              # Ensure the 'git' user (1000) can read/write it
+              chown -R 1000:1000 /data/gogs
           env:
             # Secrets from the Postgres Operator
             - name: 'DB_HOST'
@@ -69,8 +78,8 @@ spec:
           volumeMounts:
             - name: config-template
               mountPath: /tmp/template
-            - name: actual-config
-              mountPath: /tmp/actual
+            - name: gogs-persistent-storage
+              mountPath: /data
       containers:
         - name: {{ .Chart.Name }}
           {{- with .Values.securityContext }}
@@ -105,9 +114,6 @@ spec:
             - name: gogs-persistent-storage
               mountPath: /data
             {{- end }}
-            - name: actual-config
-              mountPath: /data/gogs/conf/app.ini
-              subPath: app.ini
             {{- toYaml . | nindent 12 }}
           {{- end }}
           env:
