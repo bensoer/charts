@@ -15,7 +15,7 @@ data:
 
     [server]
     ; The public-facing URL for the application.
-    EXTERNAL_URL = %(PROTOCOL)s://%(DOMAIN)s:%(HTTP_PORT)s/
+    EXTERNAL_URL = %(PROTOCOL)s://%(DOMAIN)s/
     ; The public-facing domain name for the application.
     DOMAIN = gogs.projectterris.com
     ; The protocol that is used to serve direct traffic to the application.
@@ -77,7 +77,7 @@ data:
     ; Whether to rewrite "~/.ssh/authorized_keys" file at start, ignored when use builtin SSH server.
     REWRITE_AUTHORIZED_KEYS_AT_START = false
     ; Whether to start a builtin SSH server.
-    START_SSH_SERVER = false
+    START_SSH_SERVER = true
     ; The network interface for builtin SSH server to listen on.
     SSH_LISTEN_HOST = 0.0.0.0
     ; The port number for builtin SSH server to listen on.
@@ -121,7 +121,7 @@ data:
     ; the value is non-positive, it matches the number of CPUs available to the application.
     COMMITS_FETCH_CONCURRENCY = 0
     ; Default branch name when creating new repositories.
-    DEFAULT_BRANCH = master
+    DEFAULT_BRANCH = main
 
     [repository.editor]
     ; List of file extensions that should have line wraps in the CodeMirror editor.
@@ -164,7 +164,7 @@ data:
 
     [security]
     ; Whether to show the install page, set this to "true" to bypass it.
-    INSTALL_LOCK = false
+    INSTALL_LOCK = true
     ; The secret to encrypt cookie values, 2FA code, etc.
     ; !!CHANGE THIS TO KEEP YOUR USER DATA SAFE!!
     SECRET_KEY = ${GOGS_SECRET_KEY}
@@ -520,7 +520,7 @@ data:
 
     [prometheus]
     ; Whether to enable Prometheus metrics.
-    ENABLED = true
+    ENABLED = false
     ; Whether to enable HTTP Basic Authentication to protect metrics data.
     ENABLE_BASIC_AUTH = false
     ; The username for HTTP Basic Authentication.
