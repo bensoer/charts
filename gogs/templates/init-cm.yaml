@@ -81,7 +81,7 @@ data:
     ; The network interface for builtin SSH server to listen on.
     SSH_LISTEN_HOST = 0.0.0.0
     ; The port number for builtin SSH server to listen on.
-    SSH_LISTEN_PORT = %(SSH_PORT)s
+    SSH_LISTEN_PORT = 2222
     ; The list of accepted ciphers for connections to builtin SSH server.
     SSH_SERVER_CIPHERS = aes128-ctr, aes192-ctr, aes256-ctr, aes128-gcm@openssh.com, arcfour256, arcfour128
     ; The list of accepted MACs for connections to builtin SSH server.

@@ -12,7 +12,7 @@ spec:
       protocol: TCP
       name: http
     - port: {{ .Values.service.sshPort }}
-      targetPort: 22
+      targetPort: 2222
       protocol: TCP
       name: ssh
   selector:

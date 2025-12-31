@@ -95,7 +95,7 @@ spec:
               containerPort: 3000
               protocol: TCP
             - name: ssh
-              containerPort: 22
+              containerPort: 2222
 
           {{- with .Values.livenessProbe }}
           livenessProbe:
