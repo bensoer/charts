@@ -104,7 +104,7 @@ data:
     ; Default ANSI charset for an unrecognized charset.
     ANSI_CHARSET =
     ; Whether to force every new repository to be private.
-    FORCE_PRIVATE = false
+    FORCE_PRIVATE = true
     ; The global limit of number of repositories a user can create, -1 means no limit.
     MAX_CREATION_LIMIT = -1
     ; Preferred Licenses to place at the top of the list.
@@ -171,9 +171,9 @@ data:
     ; The days remembered for auto-login.
     LOGIN_REMEMBER_DAYS = 7
     ; The cookie name to store auto-login information.
-    COOKIE_REMEMBER_NAME = gogs_incredible
+    COOKIE_REMEMBER_NAME = gogs_remember_me
     ; The cookie name to store logged in username.
-    COOKIE_USERNAME = gogs_awesome
+    COOKIE_USERNAME = gogs_username
     ; Whether to set secure cookie.
     COOKIE_SECURE = false
     ; Whether to set cookie to indicate user login status.
@@ -227,9 +227,9 @@ data:
     ; Enable this option will also require user to confirm the email for registration.
     REQUIRE_EMAIL_CONFIRMATION = false
     ; Whether to disallow anonymous users visiting the site.
-    REQUIRE_SIGNIN_VIEW = false
+    REQUIRE_SIGNIN_VIEW = true
     ; Whether to disable self-registration. When disabled, accounts would have to be created by admins.
-    DISABLE_REGISTRATION = false
+    DISABLE_REGISTRATION = true
     ; Whether to enable captcha validation for registration
     ENABLE_REGISTRATION_CAPTCHA = true
 
@@ -253,7 +253,7 @@ data:
     ; - redis: network=tcp,addr=:6379,password=macaron,db=0,pool_size=100,idle_timeout=180,tls=true
     PROVIDER_CONFIG = data/sessions
     ; The cookie name to store the session identifier.
-    COOKIE_NAME = i_like_gogs
+    COOKIE_NAME = gogs_session
     ; Whether to set cookie in HTTPS only.
     COOKIE_SECURE = false
     ; The GC interval in seconds for session data.
@@ -285,7 +285,7 @@ data:
 
     [attachment]
     ; Whether to enabled upload attachments in general.
-    ENABLED = true
+    ENABLED = false
     ; The path to store attachments on the file system.
     PATH = data/attachments
     ; File types that are allowed to be uploaded, e.g. "image/jpeg|image/png". Leave empty to allow any file type.
@@ -297,7 +297,7 @@ data:
 
     [release.attachment]
     ; Whether to enabled upload attachments for releases.
-    ENABLED = true
+    ENABLED = false
     ; File types that are allowed to be uploaded, e.g. "image/jpeg|image/png". Leave empty to allow any file type.
     ALLOWED_TYPES = */*
     ; The maximum size of each file in MB.
@@ -320,7 +320,7 @@ data:
     ; Chinese users can use a custom avatar source, such as http://cn.gravatar.com/avatar/.
     GRAVATAR_SOURCE = gravatar
     ; Whether to disable Gravatar, this value will be forced to be true in offline mode.
-    DISABLE_GRAVATAR = false
+    DISABLE_GRAVATAR = true
     ; Whether to enable federated avatar lookup uses DNS to discover avatar associated
     ; with emails, see https://www.libravatar.org for details.
     ; This value will be forced to be false in offline mode or when Gravatar is disabled.
