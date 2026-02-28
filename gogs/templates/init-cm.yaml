@@ -98,7 +98,7 @@ data:
 
     [repository]
     ; The root path for storing managed repositories, default is "~/gogs-repositories"
-    ROOT =
+    ROOT = /data/gogs-repositories
     ; The script type server supports, sometimes could be "sh".
     SCRIPT_TYPE = bash
     ; Default ANSI charset for an unrecognized charset.
