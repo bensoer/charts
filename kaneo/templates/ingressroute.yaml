@@ -20,7 +20,7 @@ spec:
     priority: 10
     services:
     # Target a Kubernetes Support
-    - name: {{ include "kaneo.fullname" . }}
+    - name: kaneo-kaneo
       namespace: {{ .Release.Namespace }}
       # Customize the connection between Traefik and the backend
       passHostHeader: true
