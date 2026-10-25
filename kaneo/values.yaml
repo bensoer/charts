@@ -15,7 +15,7 @@ kaneo:
     
     env:
       clientUrl: https://kaneo.intra.soernet.ca
-      disableRegistration: true
+      disableRegistration: false
       # AUTH_SECRET using an existing one instead
       existingSecret:
         enabled: true
