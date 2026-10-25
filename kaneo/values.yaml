@@ -1,0 +1,51 @@
+kaneo:
+  postgresql:
+    enabled: false # Do not use kaneo built in
+  autoscaling:
+    enabled: true
+
+  kaneo:
+
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        memory: 256Mi
+    
+    env:
+      clientUrl: https://kaneo.intra.soernet.ca
+      disableRegistration: true
+      # AUTH_SECRET using an existing one instead
+      existingSecret:
+        enabled: true
+        name: kaneo-auth-secret
+        key: auth-secret
+      database:
+        external:
+          enabled: true
+          existingSecret:
+            enabled: true
+            name: kaneo-cluster-app
+            passwordKey: uri
+
+cnpgDatabase:
+  enabled: true
+  storageClass: synology-nas-csi-iscsi-retain
+  size: 10Gi
+  instances: 1
+
+traefik:
+  ingressRoute:
+    enabled: true
+    domain: kaneo.intra.soernet.ca
+    issuer: letsencrypt-prod-cluster-issuer
+    issuerKind: ClusterIssuer
+
+authSecret:
+  eso:
+    enabled: true
+    secretStore:
+      name: aws-use1-parameter-store-cluster-secret-store
+      kind: ClusterSecretStore
+    remoteRefKey: /k3s-homelab/kaneo/credentials/auth_secret

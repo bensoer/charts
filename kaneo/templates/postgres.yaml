@@ -1,0 +1,17 @@
+{{- if .Values.cnpgDatabase.enabled }}
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: kaneo-cluster
+spec:
+  instances: {{ .Values.cnpgDatabase.instances }}
+
+  bootstrap:
+    initdb:
+      database: kaneo
+      owner: kaneo
+
+  storage:
+    size: {{ .Values.cnpgDatabase.size }}
+    storageClass: {{ .Values.cnpgDatabase.storageClass }}
+{{- end }}
