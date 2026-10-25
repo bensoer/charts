@@ -10,7 +10,7 @@ spec:
   routes:
   - kind: Rule
     # Rule on the Host
-    match: Host(`{{ .Values.traefik.ingressRoute.domain }}`)
+    match: Host(`{{ .Values.traefik.ingressRoute.domain }}`) && PathPrefix(`/`)
     # Enable Router observability
     observability:
       accessLogs: true
