@@ -574,7 +574,7 @@ open-webui:
   # -- Env vars added to the Open WebUI deployment. Most up-to-date environment variables can be found here: https://docs.openwebui.com/getting-started/env-configuration. Variables can be defined as list or map style.
   extraEnvVars:
     WEBUI_URL: https://openwebui.intra.soernet.ca
-    
+
     TERMINALS_API_KEY:
       valueFrom:
         secretKeyRef:
@@ -936,4 +936,4 @@ terminalsSecret:
     secretStore:
       name: aws-use1-parameter-store-cluster-secret-store
       kind: ClusterSecretStore
-    webUISecretRemoteRefKey: /k3s-homelab/openwebui/terminals_secret
+    terminalsSecretRemoteRefKey: /k3s-homelab/openwebui/terminals_secret
