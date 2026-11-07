@@ -1,0 +1,26 @@
+{{- if .Values.cnpgDatabase.enabled }}
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: openwebui-cluster
+spec:
+  instances: {{ .Values.cnpgDatabase.instances }}
+
+  # 1. Provide an image containing pgvector matching your exact PG major version
+  # Replace '16.x' with the version matching your existing database state
+  imageName: ghcr.io/cloudnative-pg/postgresql:16-pgvector
+
+  bootstrap:
+    initdb:
+      database: openwebui
+      owner: openwebui
+      # 2. Automatically activate the extension inside the database on creation
+      postInitTemplateSQL:
+        - ALTER ROLE openwebui SUPERUSER; -- Required briefly if they need to create extensions, or run as superuser
+        - \c openwebui
+        - CREATE EXTENSION IF NOT EXISTS vector;
+
+  storage:
+    size: {{ .Values.cnpgDatabase.size }}
+    storageClass: {{ .Values.cnpgDatabase.storageClass }}
+{{- end }}
