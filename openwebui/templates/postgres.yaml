@@ -8,7 +8,7 @@ spec:
 
   # 1. Provide an image containing pgvector matching your exact PG major version
   # Replace '16.x' with the version matching your existing database state
-  imageName: ghcr.io/cloudnative-pg/postgresql:16-pgvector
+  #imageName: ghcr.io/cloudnative-pg/postgresql:16-pgvector
 
   bootstrap:
     initdb:
