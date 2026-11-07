@@ -45,7 +45,7 @@ mcpo:
     eso:
       # Create an ExternalSecret that syncs the API key from Parameter Store.
       # The generated Secret is named <release>-api-key.
-      enabled: false
+      enabled: true
       secretStore:
         name: aws-use1-parameter-store-cluster-secret-store
         kind: ClusterSecretStore
@@ -103,9 +103,9 @@ resources:
   requests:
     cpu: 100m
     memory: 128Mi
-  # limits:
+  limits:
   #   cpu: 500m
-  #   memory: 512Mi
+    memory: 128Mi
 
 livenessProbe:
   httpGet:
