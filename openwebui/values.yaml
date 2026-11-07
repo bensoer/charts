@@ -67,6 +67,8 @@ open-webui:
     # @section -- External Tools configuration
     enabled: true
 
+    existingSecret: openwebui-terminals-secret
+
   websocket:
     # -- Enables websocket support in Open WebUI with env `ENABLE_WEBSOCKET_SUPPORT`
     # @section -- Websocket configuration
@@ -572,6 +574,12 @@ open-webui:
   # -- Env vars added to the Open WebUI deployment. Most up-to-date environment variables can be found here: https://docs.openwebui.com/getting-started/env-configuration. Variables can be defined as list or map style.
   extraEnvVars:
     WEBUI_URL: https://openwebui.intra.soernet.ca
+    
+    TERMINALS_API_KEY:
+      valueFrom:
+        secretKeyRef:
+          name: openwebui-terminals-secret
+          key: api-key
 
     WEBUI_SECRET_KEY:
       valueFrom:
@@ -921,3 +929,11 @@ webUISecret:
       name: aws-use1-parameter-store-cluster-secret-store
       kind: ClusterSecretStore
     webUISecretRemoteRefKey: /k3s-homelab/openwebui/secret_key
+
+terminalsSecret:
+  eso:
+    enabled: true
+    secretStore:
+      name: aws-use1-parameter-store-cluster-secret-store
+      kind: ClusterSecretStore
+    webUISecretRemoteRefKey: /k3s-homelab/openwebui/terminals_secret
