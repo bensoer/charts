@@ -540,7 +540,8 @@ open-webui:
 
   # -- OpenAI base API URLs to use. Overwrites the value in openaiBaseApiUrl if set
   # @section -- OpenAI API configuration
-  openaiBaseApiUrls: []
+  openaiBaseApiUrls:
+      - "https://openrouter.ai/api/v1"
     # - "https://api.openai.com/v1"
     # - "https://api.company.openai.com/v1"
 
