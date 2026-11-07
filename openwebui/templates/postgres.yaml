@@ -16,8 +16,7 @@ spec:
       owner: openwebui
       # 2. Automatically activate the extension inside the database on creation
       postInitTemplateSQL:
-        - ALTER ROLE openwebui SUPERUSER; -- Required briefly if they need to create extensions, or run as superuser
-        - \c openwebui
+        - ALTER ROLE openwebui SUPERUSER;
         - CREATE EXTENSION IF NOT EXISTS vector;
 
   storage:
