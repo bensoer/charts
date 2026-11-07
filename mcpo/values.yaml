@@ -107,14 +107,14 @@ resources:
   #   cpu: 500m
     memory: 128Mi
 
-livenessProbe:
-  httpGet:
-    path: /docs
-    port: http
-readinessProbe:
-  httpGet:
-    path: /docs
-    port: http
+# livenessProbe:
+#   httpGet:
+#     path: /docs
+#     port: http
+# readinessProbe:
+#   httpGet:
+#     path: /docs
+#     port: http
 
 autoscaling:
   enabled: true
