@@ -102,10 +102,10 @@ resources:
   # CPU requests are required for CPU-utilization-based autoscaling.
   requests:
     cpu: 100m
-    memory: 128Mi
+    memory: 256Mi
   limits:
   #   cpu: 500m
-    memory: 128Mi
+    memory: 256Mi
 
 # livenessProbe:
 #   httpGet:
