@@ -14,7 +14,7 @@ helm upgrade --install mcpo ./mcpo \
 
 The default configuration runs the `time` MCP server through `uvx`. Replace it with your own configuration before production use.
 
-The chart defaults to `ghcr.io/open-webui/mcpo:0.0.20`, matching the latest upstream release (`v0.0.20`). At the time of this chart update, GHCR returned `manifest unknown` for both `0.0.20` and `v0.0.20`. If the release image is still unavailable, temporarily override the tag with `image.tag: main`.
+The chart uses `ghcr.io/open-webui/mcpo:git-788ff92`. Upstream release `v0.0.20` points to commit `788ff92e5288a899a743a252edd5748f4ad4ab1f`, and this GHCR tag identifies the corresponding container image. GHCR does not publish `0.0.20` or `v0.0.20` tags, so the chart's `appVersion` remains `0.0.20` while `image.tag` explicitly selects the release commit's image.
 
 When installed as `mcpo` in the `openwebui` namespace, Open WebUI can reach MCPO at:
 
@@ -218,7 +218,7 @@ Do not place credentials in the inline `config` ConfigMap. `env` and `envFrom` c
 | Value | Default | Description |
 | --- | --- | --- |
 | `image.repository` | `ghcr.io/open-webui/mcpo` | Container image repository |
-| `image.tag` | `""` (`0.0.20` via `appVersion`) | Container image tag override |
+| `image.tag` | `git-788ff92` | GHCR image built from the `v0.0.20` release commit |
 | `service.type` | `ClusterIP` | Kubernetes Service type |
 | `service.port` | `8000` | Service port |
 | `mcpo.port` | `8000` | MCPO container/listening port |
