@@ -615,6 +615,15 @@ open-webui:
           name: openwebui-openrouter-secret
           key: OPENROUTER_API_KEY
 
+    # variable set settings now override database
+    ENABLE_PERSISTENT_CONFIG: "false"
+
+    OPENAI_API_KEY:
+      valueFrom:
+        secretKeyRef:
+          name: openwebui-openrouter-secret
+          key: OPENROUTER_API_KEY
+
 
     # - name: OPENAI_API_KEY
     #   valueFrom:
