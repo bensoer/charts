@@ -573,6 +573,12 @@ open-webui:
   extraEnvVars:
     WEBUI_URL: https://openwebui.intra.soernet.ca
 
+    WEBUI_SECRET_KEY:
+      valueFrom:
+        secretKeyRef:
+          name: openwebui-secret
+          key: WEBUI_SECRET_KEY
+
     # Database persistence
     DATABASE_URL:
       valueFrom:
@@ -905,3 +911,12 @@ openRouterSecret:
       name: aws-use1-parameter-store-cluster-secret-store
       kind: ClusterSecretStore
     apiKeyRemoteRefKey: /k3s-homelab/openwebui/openrouter/api_key
+
+
+webUISecret:
+  eso:
+    enabled: true
+    secretStore:
+      name: aws-use1-parameter-store-cluster-secret-store
+      kind: ClusterSecretStore
+    webUISecretRemoteRefKey: /k3s-homelab/openwebui/secret_key
