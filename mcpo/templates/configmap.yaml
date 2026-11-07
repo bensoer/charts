@@ -1,0 +1,19 @@
+{{- $useConfigSecret := or .Values.configSecret.existingName .Values.configSecret.eso.enabled -}}
+{{- if and (not .Values.configMap.existingName) (not $useConfigSecret) }}
+{{- if not .Values.config }}
+{{- fail "config must contain an MCP server configuration when configMap.existingName is not set" }}
+{{- end }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "mcpo.configMapName" . }}
+  labels:
+    {{- include "mcpo.labels" . | nindent 4 }}
+  {{- with .Values.configMap.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+data:
+  {{ .Values.configMap.key | quote }}: |
+    {{- mustToJson .Values.config | nindent 4 }}
+{{- end }}

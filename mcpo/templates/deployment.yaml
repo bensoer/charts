@@ -1,0 +1,151 @@
+{{- $useConfigSecret := or .Values.configSecret.existingName .Values.configSecret.eso.enabled -}}
+{{- $apiKeyEnabled := or .Values.mcpo.apiKey.existingSecret .Values.mcpo.apiKey.eso.enabled -}}
+{{- $useManagedConfigMap := and (not .Values.configMap.existingName) (not $useConfigSecret) -}}
+{{- if and .Values.mcpo.apiKey.existingSecret .Values.mcpo.apiKey.eso.enabled -}}
+{{- fail "mcpo.apiKey.existingSecret and mcpo.apiKey.eso.enabled are mutually exclusive" }}
+{{- end -}}
+{{- if and $useConfigSecret .Values.configMap.existingName -}}
+{{- fail "configMap.existingName cannot be combined with configSecret.existingName or configSecret.eso.enabled" }}
+{{- end -}}
+{{- if and .Values.configSecret.existingName .Values.configSecret.eso.enabled -}}
+{{- fail "configSecret.existingName and configSecret.eso.enabled are mutually exclusive" }}
+{{- end -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "mcpo.fullname" . }}
+  labels:
+    {{- include "mcpo.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "mcpo.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- if or $useManagedConfigMap .Values.podAnnotations }}
+      annotations:
+        {{- if $useManagedConfigMap }}
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        {{- end }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- end }}
+      labels:
+        {{- include "mcpo.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "mcpo.serviceAccountName" . }}
+      automountServiceAccountToken: {{ .Values.serviceAccount.automount }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          {{- with .Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+            - --host
+            - 0.0.0.0
+            - --port
+            - {{ .Values.mcpo.port | quote }}
+            - --config
+            - /etc/mcpo/mcp.json
+            {{- if .Values.mcpo.hotReload }}
+            - --hot-reload
+            {{- end }}
+            {{- if .Values.mcpo.rootPath }}
+            - --root-path
+            - {{ .Values.mcpo.rootPath | quote }}
+            {{- end }}
+            {{- if $apiKeyEnabled }}
+            - --api-key
+            - "$(MCPO_API_KEY)"
+            {{- end }}
+            {{- with .Values.mcpo.extraArgs }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- if or .Values.env $apiKeyEnabled }}
+          env:
+            {{- if $apiKeyEnabled }}
+            - name: MCPO_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "mcpo.apiKeySecretName" . }}
+                  key: {{ .Values.mcpo.apiKey.key | quote }}
+            {{- end }}
+            {{- with .Values.env }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- end }}
+          {{- with .Values.envFrom }}
+          envFrom:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.mcpo.port }}
+              protocol: TCP
+          {{- with .Values.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: mcp-config
+              mountPath: /etc/mcpo
+              readOnly: true
+            {{- with .Values.volumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+      volumes:
+        - name: mcp-config
+          {{- if $useConfigSecret }}
+          secret:
+            secretName: {{ include "mcpo.configSecretName" . }}
+            items:
+              - key: {{ .Values.configSecret.key | quote }}
+                path: mcp.json
+          {{- else }}
+          configMap:
+            name: {{ include "mcpo.configMapName" . }}
+            items:
+              - key: {{ .Values.configMap.key | quote }}
+                path: mcp.json
+          {{- end }}
+        {{- with .Values.volumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

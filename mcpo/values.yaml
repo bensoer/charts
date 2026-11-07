@@ -1,0 +1,132 @@
+# Initial replica count. Ignored while autoscaling.enabled is true.
+replicaCount: 1
+
+image:
+  repository: ghcr.io/open-webui/mcpo
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion (0.0.20).
+  tag: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  automount: false
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+podSecurityContext: {}
+securityContext: {}
+
+service:
+  type: ClusterIP
+  port: 8000
+  annotations: {}
+
+mcpo:
+  # Container port. The Service separately exposes service.port.
+  port: 8000
+  # Watch mcp.json and reload MCP servers when its ConfigMap or Secret is updated.
+  hotReload: true
+  # Optional ASGI root path, for example /api/mcpo.
+  rootPath: ""
+  # Additional MCPO CLI arguments, for example ["--strict-auth", "--log-level", "DEBUG"].
+  extraArgs: []
+  apiKey:
+    # Name of an existing Secret. Leave empty with eso.enabled=false to disable
+    # MCPO API-key authentication. Do not combine with eso.enabled.
+    existingSecret: ""
+    # Key within the existing or ESO-generated Secret containing the API key.
+    key: api-key
+    eso:
+      # Create an ExternalSecret that syncs the API key from Parameter Store.
+      # The generated Secret is named <release>-api-key.
+      enabled: false
+      secretStore:
+        name: aws-use1-parameter-store-cluster-secret-store
+        kind: ClusterSecretStore
+      remoteRefKey: /k3s-homelab/mcpo/api-key
+
+configMap:
+  # Use an existing ConfigMap instead of creating one from config below.
+  existingName: ""
+  # Key containing the JSON configuration in either the managed or existing ConfigMap.
+  key: mcp.json
+  annotations: {}
+
+configSecret:
+  # Name of an existing Secret containing the complete mcp.json. Takes precedence
+  # over ConfigMap-backed and inline configuration. Do not combine with eso.enabled.
+  existingName: ""
+  # Key containing mcp.json in either the existing or ESO-generated Secret.
+  key: mcp.json
+  eso:
+    # Create an ExternalSecret that syncs one complete mcp.json from Parameter Store.
+    # The generated Secret is named <release>-config.
+    enabled: true
+    secretStore:
+      name: aws-use1-parameter-store-cluster-secret-store
+      kind: ClusterSecretStore
+    remoteRefKey: /k3s-homelab/mcpo/mcp.json
+
+# Optional inline ConfigMap configuration template.
+# Uncomment only when configSecret.existingName is empty, configSecret.eso.enabled
+# is false, and configMap.existingName is empty. Secret-backed configuration otherwise
+# takes precedence and this entire section is ignored. Do not put credentials here.
+# config:
+#   mcpServers:
+#     time:
+#       command: uvx
+#       args:
+#         - mcp-server-time
+#         - --local-timezone=Etc/UTC
+
+# Additional environment variables for MCPO and its stdio MCP subprocesses.
+env: []
+  # - name: LOG_LEVEL
+  #   value: INFO
+  # - name: EXAMPLE_API_TOKEN
+  #   valueFrom:
+  #     secretKeyRef:
+  #       name: example-credentials
+  #       key: token
+envFrom: []
+  # - secretRef:
+  #     name: mcp-credentials
+
+resources:
+  # CPU requests are required for CPU-utilization-based autoscaling.
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  # limits:
+  #   cpu: 500m
+  #   memory: 512Mi
+
+livenessProbe:
+  httpGet:
+    path: /docs
+    port: http
+readinessProbe:
+  httpGet:
+    path: /docs
+    port: http
+
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+# Additional volumes and mounts, for example for MCP server data or CA certificates.
+volumes: []
+volumeMounts: []
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

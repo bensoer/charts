@@ -1,0 +1,12 @@
+MCPO is running as an internal {{ .Values.service.type }} service.
+
+Service URL:
+  http://{{ include "mcpo.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.port }}
+
+OpenAPI documentation:
+  http://{{ include "mcpo.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.port }}/docs
+
+Each configured MCP server is available at /<server-name>, with documentation at
+/<server-name>/docs. Use the service URL above when adding this OpenAPI server to
+Open WebUI in the same namespace. From another namespace, use the fully qualified
+service DNS name.
