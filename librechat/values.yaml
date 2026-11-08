@@ -32,10 +32,13 @@ librechat:
       # Public URLs used for oauth callbacks and links
       DOMAIN_CLIENT: https://librechat.intra.soernet.ca
       DOMAIN_SERVER: https://librechat.intra.soernet.ca
-      # Only expose the custom OpenRouter endpoint defined in
-      # librechat.configYamlContent below - we have no other provider keys
-      # (add endpoint names back here if that ever changes)
-      ENDPOINTS: custom
+      # Exposed endpoints in the UI dropdown: the custom OpenRouter endpoint
+      # defined in librechat.configYamlContent below, plus the built-in
+      # 'agents' endpoint that provides the Agent Builder (setting ENDPOINTS at
+      # all filters the dropdown to exactly this list, so the builder stays
+      # hidden unless agents is listed). No other provider keys exist, so
+      # nothing else is listed (add endpoint names back here if that changes).
+      ENDPOINTS: custom,agents
 
       # Email delivery via SendGrid SMTP, used for password reset mails,
       # new account verification and email address changes. The API key is
@@ -54,13 +57,24 @@ librechat:
       EMAIL_ENCRYPTION: tls
       # SendGrid SMTP auth is always username "apikey" + the API key
       EMAIL_USERNAME: apikey
-      # TODO: replace with your SendGrid verified sender address
+      # Verified SendGrid single sender address (confirmed real against the
+      # deployed librechat-configenv ConfigMap - not a placeholder)
       EMAIL_FROM: support@projectterris.com
       EMAIL_FROM_NAME: LibreChat From Soernet
       # Turns on email based password reset. NOTE: if this is true and email
       # delivery is broken/misconfigured, LibreChat shows the reset link
       # directly on the page instead of emailing it - keep email working
       ALLOW_PASSWORD_RESET: "true"
+
+      # Disables public sign-up: the registration form is hidden
+      # (registrationEnabled: false served by /api/config) and the signup
+      # API returns 403 (api/server/middleware/validateRegistration.js).
+      # QUOTED like every bool/number in configEnv (ConfigMap data must be
+      # strings). First user exists (created via create-user), and future
+      # accounts can still be created with `kubectl exec ... npm run
+      # create-user` or invite-user (invite path bypasses the middleware) -
+      # nothing else is needed for a single-user instance
+      ALLOW_REGISTRATION: "false"
 
     # LibreChat has no dedicated OpenRouter endpoint type; the documented way
     # is a custom endpoint on top of the OpenRouter OpenAI-compatible api
