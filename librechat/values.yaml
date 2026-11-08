@@ -43,7 +43,13 @@ librechat:
       # Parameter Store through credentialsSecret.eso.data below.
       # Docs: https://www.librechat.ai/docs/configuration/authentication/email
       EMAIL_HOST: smtp.sendgrid.net
-      EMAIL_PORT: 465
+      # QUOTED on purpose: configEnv renders verbatim into the
+      # librechat-configenv ConfigMap, and ConfigMap data values must be
+      # strings - an unquoted 465 renders as a YAML number and the API server
+      # rejects the whole ConfigMap ("cannot unmarshal number into Go struct
+      # field ConfigMap.data of type string"), so nothing envFrom-injects it.
+      # Quote EVERY numeric/boolean env value in this block.
+      EMAIL_PORT: "465"
       # 465 is implicit TLS; use starttls instead if you ever switch to 587
       EMAIL_ENCRYPTION: tls
       # SendGrid SMTP auth is always username "apikey" + the API key
