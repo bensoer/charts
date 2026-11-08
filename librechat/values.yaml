@@ -49,7 +49,7 @@ librechat:
       # SendGrid SMTP auth is always username "apikey" + the API key
       EMAIL_USERNAME: apikey
       # TODO: replace with your SendGrid verified sender address
-      EMAIL_FROM: librechat@soernet.ca
+      EMAIL_FROM: support@projectterris.com
       EMAIL_FROM_NAME: LibreChat From Soernet
       # Turns on email based password reset. NOTE: if this is true and email
       # delivery is broken/misconfigured, LibreChat shows the reset link
