@@ -1,0 +1,497 @@
+# Wrapper chart for LibreChat (https://www.librechat.ai/docs/local/helm_chart)
+#
+# Extends the official librechat chart (oci://ghcr.io/librechat-ai/librechat-chart)
+# and integrates it with the homelab stack:
+#   - traefik IngressRoute (chart managed ingress is disabled)
+#   - cert-manager Certificate (letsencrypt-prod-cluster-issuer)
+#   - cnpg Cluster backing the librechat-rag-api pgvector vector store
+#     (the rag api's bundled postgresql subchart is disabled)
+#   - AWS Parameter Store credentials via external-secrets
+#
+# NOTE: LibreChat only supports MongoDB as its primary datastore (cnpg is
+# postgres only and cannot replace it), so the bundled bitnami MongoDB subchart
+# stays enabled and is persisted on the homelab storage class.
+
+librechat:
+  # Pin the resource names so the traefik IngressRoute below can target the service
+  fullnameOverride: librechat
+
+  # The app is stateless: sessions/cache live in the bundled Redis below and
+  # uploaded files in S3 (fileStrategy: s3), so this can be raised past 1
+  # whenever more capacity is needed
+  replicaCount: 1
+
+  # Disable the built-in ingress; routing + TLS are handled by the traefik
+  # IngressRoute and cert-manager Certificate at the bottom of this file
+  ingress:
+    enabled: false
+
+  librechat:
+    configEnv:
+      APP_TITLE: LibreChat
+      # Public URLs used for oauth callbacks and links
+      DOMAIN_CLIENT: https://librechat.intra.soernet.ca
+      DOMAIN_SERVER: https://librechat.intra.soernet.ca
+      # Only expose the custom OpenRouter endpoint defined in
+      # librechat.configYamlContent below - we have no other provider keys
+      # (add endpoint names back here if that ever changes)
+      ENDPOINTS: custom
+
+      # Email delivery via SendGrid SMTP, used for password reset mails,
+      # new account verification and email address changes. The API key is
+      # EMAIL_PASSWORD (username is literally "apikey") and is synced from
+      # Parameter Store through credentialsSecret.eso.data below.
+      # Docs: https://www.librechat.ai/docs/configuration/authentication/email
+      EMAIL_HOST: smtp.sendgrid.net
+      EMAIL_PORT: 465
+      # 465 is implicit TLS; use starttls instead if you ever switch to 587
+      EMAIL_ENCRYPTION: tls
+      # SendGrid SMTP auth is always username "apikey" + the API key
+      EMAIL_USERNAME: apikey
+      # TODO: replace with your SendGrid verified sender address
+      EMAIL_FROM: librechat@soernet.ca
+      EMAIL_FROM_NAME: LibreChat From Soernet
+      # Turns on email based password reset. NOTE: if this is true and email
+      # delivery is broken/misconfigured, LibreChat shows the reset link
+      # directly on the page instead of emailing it - keep email working
+      ALLOW_PASSWORD_RESET: "true"
+
+    # LibreChat has no dedicated OpenRouter endpoint type; the documented way
+    # is a custom endpoint on top of the OpenRouter OpenAI-compatible api
+    # (https://www.librechat.ai/docs/configuration/librechat_yaml/ai_endpoints).
+    # The ${OPENROUTER_KEY} reference resolves against the librechat-credentials-env
+    # Secret synced from Parameter Store further down this file.
+    configYamlContent: |
+      version: 1.3.18
+
+      cache: true
+
+      # All uploaded/generated files (images, avatars, documents, skills) are
+      # stored in AWS S3 instead of the local filesystem, so the app stays
+      # stateless and scales past one pod. ALL of the S3 config - credentials
+      # AND region/bucket/endpoint - is synced from Parameter Store into the
+      # credentials Secret (see credentialsSecret below), which is envFrom
+      # injected into the app pod: every secretKey there becomes an
+      # environment variable. Nothing S3 related lives in Helm values.
+      # NOTE: S3 is not a CDN - images/avatars are served via presigned URLs
+      # (S3_URL_EXPIRY_SECONDS, default 120s) so an expired avatar can render
+      # broken until the page refreshes. CloudFront/Firebase is the docs'
+      # answer if that ever matters here.
+      fileStrategy: s3
+
+      # Keep the model dropdown / presets / parameter panel visible: a
+      # non-empty modelSpecs list below disables these interface elements
+      # unless explicitly re-enabled
+      interface:
+        modelSelect: true
+        presets: true
+        parameters: true
+
+        # Shared Links permissions
+        sharedLinks:
+          create: true
+          share: true
+          public: false
+          snapshotFiles: true
+
+        # Skills permissions and activation defaults
+        skills:
+          use: true
+          create: true
+          share: false
+          public: false
+          defaultActiveOnShare: false
+
+        # Context usage and cost display. Token usage is recorded as
+        # transactions in MongoDB by default (transactions.enabled defaults
+        # to true); the balance system (per-user token credit limits that
+        # BLOCK requests when empty) stays off. Costs are computed from the
+        # per-model USD rates in endpoints.custom[].tokenConfig below - the
+        # currency block only converts the DISPLAYED costs (rates and
+        # transactions stay USD)
+        # Docs: https://www.librechat.ai/docs/configuration/token_usage
+        contextUsage: true
+        contextCost: true
+        # Static USD -> CAD multiplier for displayed costs (adjust as needed)
+        currency:
+          code: CAD
+          rate: 1.37
+
+        # Show the thumbs up/thumbs down feedback buttons on responses
+        feedback: false
+
+      # Default model for new chats: OpenRouter's Free Models Router
+      modelSpecs:
+        # prioritize defaults to true, which keeps a spec always selected
+        list:
+          - name: openrouter-free-models-router
+            label: OpenRouter Free Models Router
+            # Auto-selected on EVERY new chat. Switch to softDefault: true to
+            # only default users who have not picked a model/spec/agent yet,
+            # preserving their later choices
+            softDefault: true
+            preset:
+              # Must match the custom endpoint name below exactly
+              endpoint: OpenRouter
+              model: openrouter/free
+
+      # MCP servers, configured here instead of through the UI (mirrors the
+      # repo root mcp.json used by mcpo/openwebui). Initialized at pod startup;
+      # a helm upgrade that changes this yaml changes the checksum/config pod
+      # annotation, so pods roll and pick it up automatically. UI/DB-created
+      # servers can coexist, but yaml entries are operator owned
+      # (process-backed/stdio entries can ONLY live here - the admin config
+      # API rejects them, so nothing can override them later).
+      #
+      # TOKEN SECURITY: tokens never live in this file. ${VAR} references in
+      # headers/env resolve against the POD ENVIRONMENT at connect time, and
+      # every entry under credentialsSecret.eso.data in values.yaml is envFrom
+      # injected into this pod from Parameter Store. The stdio servers spawn
+      # INSIDE the librechat pod - the image ships uv/uvx, python3 and node/npx
+      # (see upstream Dockerfile), so uvx/npx commands work as-is.
+      #
+      # Per-user secrets (each user their own key): use customUserVars - the
+      # UI collects the value once, stores it encrypted with CREDS_KEY/
+      # CREDS_IV (from the credentials Secret) and substitutes it per request.
+      mcpServers:
+        # stdio (uvx) - time tools, image ships uv/uvx
+        time:
+          type: stdio
+          command: uvx
+          args:
+            - mcp-server-time
+            - --local-timezone=Etc/UTC
+
+        # stdio (npx) - sequential thinking
+        sequential-thinking:
+          type: stdio
+          command: npx
+          args:
+            - -y
+            - '@modelcontextprotocol/server-sequential-thinking@1.0.0'
+
+        # remote - stockcake image search
+        stockcake:
+          type: streamable-http
+          url: https://stockcake.com/api/mcp
+
+        # remote - our own standards/workflows server, static bearer token
+        # from Parameter Store (requiresOAuth: false skips OAuth
+        # auto-detection that would misclassify the 401 as OAuth-protected)
+        standards-and-workflows-mcp:
+          type: streamable-http
+          url: https://mcp.bensoer.com/mcp
+          requiresOAuth: false
+          headers:
+            Authorization: 'Bearer ${MCP_STANDARDS_WORKFLOWS_TOKEN}'
+
+        # remote - code search
+        grepp:
+          type: streamable-http
+          url: https://mcp.grep.app
+
+        # remote - wolfram alpha
+        wolfram:
+          type: streamable-http
+          url: https://agenttools.wolfram.com/mcp
+
+        # stdio (npx) - kaneo project management, api key from Parameter Store
+        kaneo:
+          type: stdio
+          command: npx
+          args:
+            - -y
+            - '@kaneo/mcp'
+          env:
+            KANEO_API_URL: https://kaneo.intra.soernet.ca
+            KANEO_API_KEY: '${MCP_KANEO_API_KEY}'
+
+        # remote - github copilot mcp, fine-grained PAT from Parameter Store
+        github:
+          type: streamable-http
+          url: https://api.githubcopilot.com/mcp/
+          requiresOAuth: false
+          headers:
+            Authorization: 'Bearer ${MCP_GITHUB_TOKEN}'
+
+      endpoints:
+        custom:
+          - name: OpenRouter
+            apiKey: "${OPENROUTER_KEY}"
+            baseURL: https://openrouter.ai/api/v1
+            models:
+              default:
+                - openrouter/free
+              # Fetch the full model list from OpenRouter on startup, so new
+              # OpenRouter models appear without config changes
+              fetch: true
+            # Per-model context windows and USD-per-million-token rates that
+            # drive the contextUsage/contextCost gauge and the token
+            # transactions. LibreChat computes cost from THESE rates - it
+            # does not read the usage.cost OpenRouter reports - so keep them
+            # in sync with https://openrouter.ai/api/v1/models. Keys must
+            # match the model value sent through this endpoint exactly.
+            # Only the models pinned in this file are listed: any other
+            # model picked from the fetched dropdown shows context usage but
+            # no cost until added here. NOTE: this tracks only librechat's
+            # own spend - rag api embeddings on the same OPENROUTER_KEY are
+            # billed by OpenRouter but invisible here (openrouter.ai/activity
+            # shows account-wide usage; LibreChat has no integration that
+            # pulls OpenRouter's credits/activity endpoints into its UI)
+            tokenConfig:
+              # modelSpecs default: the Free Models Router only routes to
+              # $0 free models (200k context), so costs show $0 - the real
+              # free-model limits (20 req/min, then pay-per-token) are
+              # enforced on OpenRouter's side
+              openrouter/free:
+                prompt: 0
+                completion: 0
+                context: 200000
+              # titleModel below - a tiny completion per new chat
+              openai/gpt-4o-mini:
+                prompt: 0.15
+                completion: 0.6
+                context: 128000
+              # summaryModel below. :floor routes to the cheapest provider,
+              # so the base kimi-k3.1-pro rates are an upper bound (the
+              # models api has no separate :floor entry). The key is quoted
+              # because of the colon in the slug
+              'moonshotai/kimi-k3.1-pro:floor':
+                prompt: 2
+                completion: 10
+                context: 1048576
+            # Title generation is a tiny completion (~a dozen tokens), so
+            # 4o-mini is more than enough and stays cheap. NOTE: no :nitro
+            # variant exists for this model on OpenRouter (verified against the
+            # models api - only :batch suffix does)
+            titleConvo: true
+            titleModel: openai/gpt-4o-mini
+            # Mid-conversation context summarization when a chat overflows
+            summarize: true
+            # :floor routes to the cheapest provider for this model on
+            # OpenRouter (the base slug moonshotai/kimi-k3.1-pro exists,
+            # verified against the OpenRouter models api)
+            summaryModel: moonshotai/kimi-k3.1-pro:floor
+            forcePrompt: false
+            modelDisplayLabel: OpenRouter
+            # Attribution headers OpenRouter displays on openrouter.ai rankings
+            addParams:
+              headers:
+                HTTP-Referer: https://librechat.intra.soernet.ca
+                X-Title: LibreChat
+            dropParams: []
+
+    # Local PVC for uploaded images. DISABLED: fileStrategy: s3 above stores
+    # all uploads in S3, which keeps the app stateless and lets
+    # replicaCount scale past one (an RWO PVC cannot be mounted by pods on
+    # multiple nodes). Re-enable this (and set fileStrategy: local) to go
+    # back to volume-backed storage.
+    imageVolume:
+      enabled: false
+      size: 10G
+      storageClassName: synology-nas-csi-iscsi-retain
+
+  # Point the probes at the dedicated endpoints (see
+  # https://www.librechat.ai/docs/local/helm_chart#configuration).
+  # /health stays 200 while the app is degraded, so it is not used here
+  livenessProbe:
+    httpGet:
+      path: /livez
+      port: 3080
+  readinessProbe:
+    httpGet:
+      path: /readyz
+      port: 3080
+
+  # LibreChat primary datastore. Bundled bitnami MongoDB (auth enabled by the
+  # upstream 3.x chart defaults; MONGO_URI is assembled from the generated
+  # subchart secret by the upstream templates)
+  mongodb:
+    enabled: true
+    image:
+      # Bitnami moved versioned image tags to docker.io/bitnamilegacy on 2025-08-28
+      repository: bitnamilegacy/mongodb
+    persistence:
+      storageClass: synology-nas-csi-iscsi-retain
+      size: 10Gi
+
+  # Message search. The master key is pulled from the shared credentials secret
+  # (auth.existingMasterKeySecret below must contain MEILI_MASTER_KEY)
+  meilisearch:
+    enabled: true
+    persistence:
+      enabled: true
+      storageClass: synology-nas-csi-iscsi-retain
+    auth:
+      existingMasterKeySecret: librechat-credentials-env
+
+  # Session/cache store so the librechat app can run multiple replicas. The
+  # upstream chart injects USE_REDIS/REDIS_URI plus the generated
+  # REDIS_PASSWORD into the app automatically.
+  # Not exposed outside the cluster; only the app talks to it.
+  redis:
+    enabled: true
+    architecture: standalone
+    auth:
+      enabled: true
+    master:
+      persistence:
+        enabled: true
+        storageClass: synology-nas-csi-iscsi-retain
+        size: 2Gi
+
+  # RAG api for file uploads / retrieval augmented generation. Wired to the
+  # cnpg Cluster created from cnpgDatabase below instead of the bundled
+  # postgresql (pgvector) subchart.
+  librechat-rag-api:
+    enabled: true
+
+    # Embeddings through OpenRouter: it is fully OpenAI compatible (same
+    # setup as the openwebui chart's RAG config) and exposes an embeddings
+    # endpoint at https://openrouter.ai/api/v1/embeddings, so the openai
+    # provider is pointed at OpenRouter with the openai/* model slug
+    # OpenRouter uses. RAG_OPENAI_API_KEY (in env below) overrides
+    # OPENAI_API_KEY for embeddings and comes from the credentials Secret.
+    rag:
+      configEnv:
+        EMBEDDINGS_PROVIDER: openai
+        # OpenAI compatible base url of the embeddings endpoint
+        RAG_OPENAI_BASEURL: https://openrouter.ai/api/v1
+        # OpenRouter serves OpenAI embedding models under an openai/ slug
+        # (native dimensionality 1536 - same model the openwebui chart uses)
+        EMBEDDINGS_MODEL: openai/text-embedding-3-small
+
+    postgresql:
+      # Use our own cnpg Cluster (see cnpgDatabase below) instead of the
+      # bundled pgvector postgresql subchart. The cnpg operator generates the
+      # librechat-rag-cluster-app Secret holding every connection field
+      # (username/password/dbname/host/port) - the chart injects the password
+      # from it below and the rest are mapped through env entries
+      enabled: false
+      auth:
+        # cnpg generated app Secret of the librechat-rag-cluster Cluster
+        existingSecret: librechat-rag-cluster-app
+        secretKeys:
+          # key of the cnpg Secret holding the database owner password
+          userPasswordKey: password
+
+    # Plain env entries win over the envFrom configmap, so these override the
+    # bundled-postgres defaults baked into the rag api ConfigMap. EVERY
+    # connection field comes from the cnpg generated librechat-rag-cluster-app
+    # Secret (password via postgresql.auth.existingSecret above, the rest
+    # here), so this stays in sync with the cnpgDatabase template below
+    # without hardcoded host/db names in Helm values.
+    # NOTE: the app reads DB_HOST/DB_PORT (app/config.py), NOT
+    # POSTGRES_HOST/POSTGRES_PORT
+    env:
+      # OpenRouter is OpenAI compatible, so the same key backs embeddings
+      # (this overrides OPENAI_API_KEY for the rag api)
+      - name: RAG_OPENAI_API_KEY
+        valueFrom:
+          secretKeyRef:
+            name: librechat-credentials-env
+            key: OPENROUTER_KEY
+      - name: DB_HOST
+        valueFrom:
+          secretKeyRef:
+            name: librechat-rag-cluster-app
+            key: host
+      - name: DB_PORT
+        valueFrom:
+          secretKeyRef:
+            name: librechat-rag-cluster-app
+            key: port
+      - name: POSTGRES_DB
+        valueFrom:
+          secretKeyRef:
+            name: librechat-rag-cluster-app
+            key: dbname
+      - name: POSTGRES_USER
+        valueFrom:
+          secretKeyRef:
+            name: librechat-rag-cluster-app
+            key: username
+      # POSTGRES_PASSWORD is injected by the rag chart from the same cnpg
+      # Secret via postgresql.auth.existingSecret above
+
+# The Secret referenced by global.librechat.existingSecretName. It is envFrom
+# injected into the librechat pod (all keys become environment variables), by
+# bundled Meilisearch via auth.existingMasterKeySecret, and OPENAI_API_KEY from
+# global.librechat.existingSecretApiKey is used by the rag api for embeddings.
+global:
+  librechat:
+    existingSecretName: librechat-credentials-env
+    # Key in the credentials Secret the rag api chart injects as its
+    # OPENAI_API_KEY fallback (embeddings). RAG_OPENAI_API_KEY above overrides
+    # it for embeddings anyway - both resolve to the same OpenRouter key
+    existingSecretApiKey: OPENROUTER_KEY
+
+# Sync the LibreChat credentials from AWS Parameter Store into the
+# librechat-credentials-env Secret. Every key below becomes an environment
+# variable in the librechat pod (CREDS_KEY/CREDS_IV encrypt credential
+# storage, JWT_SECRET/JWT_REFRESH_SECRET sign sessions, MEILI_MASTER_KEY
+# authenticates against bundled Meilisearch) and OPENROUTER_KEY backs both
+# the custom OpenRouter chat endpoint (librechat.configYamlContent) and the
+# rag api embeddings (RAG_OPENAI_API_KEY / existingSecretApiKey). The
+# AWS_* entries back the fileStrategy: s3 storage - access keys plus the
+# non-secret region/bucket/endpoint (same Parameter Store layout as the
+# openwebui chart's s3 section). Every key here is envFrom injected into
+# the librechat pod as an environment variable.
+# Remove unused entries here after skipping their put-parameter command -
+# the Secret is mounted with optional: false, so a missing parameter blocks
+# the whole app from starting.
+credentialsSecret:
+  eso:
+    enabled: true
+    secretStore:
+      name: aws-use1-parameter-store-cluster-secret-store
+      kind: ClusterSecretStore
+    data:
+      CREDS_KEY: /k3s-homelab/librechat/credentials/creds_key
+      CREDS_IV: /k3s-homelab/librechat/credentials/creds_iv
+      JWT_SECRET: /k3s-homelab/librechat/credentials/jwt_secret
+      JWT_REFRESH_SECRET: /k3s-homelab/librechat/credentials/jwt_refresh_secret
+      MEILI_MASTER_KEY: /k3s-homelab/librechat/credentials/meili_master_key
+      # Backs both the custom OpenRouter chat endpoint
+      # (librechat.configYamlContent) and the rag api embeddings
+      # (RAG_OPENAI_API_KEY / existingSecretApiKey)
+      OPENROUTER_KEY: /k3s-homelab/librechat/api_keys/openrouter
+      # MCP server tokens (referenced from mcpServers in configYamlContent)
+      MCP_STANDARDS_WORKFLOWS_TOKEN: /k3s-homelab/librechat/mcp/standards_workflows_token
+      MCP_KANEO_API_KEY: /k3s-homelab/librechat/mcp/kaneo_api_key
+      MCP_GITHUB_TOKEN: /k3s-homelab/librechat/mcp/github_token
+      # SendGrid SMTP password (EMAIL_USERNAME is literally apikey, this is
+      # the API key). Backs the email config in configEnv above
+      EMAIL_PASSWORD: /k3s-homelab/librechat/email/sendgrid_api_key
+      # S3 object storage for fileStrategy: s3 - credentials plus the
+      # non-secret region/bucket/endpoint, matching the openwebui chart's
+      # parameter layout
+      AWS_ACCESS_KEY_ID: /k3s-homelab/librechat/s3/access_key
+      AWS_SECRET_ACCESS_KEY: /k3s-homelab/librechat/s3/secret_key
+      AWS_REGION: /k3s-homelab/librechat/s3/region
+      AWS_BUCKET_NAME: /k3s-homelab/librechat/s3/bucket
+      AWS_ENDPOINT_URL: /k3s-homelab/librechat/s3/endpoint_url
+
+# cnpg postgres Cluster backing the librechat-rag-api (pgvector vector store).
+# cnpg generates the librechat-rag-cluster-app Secret with the owner
+# credentials that the rag api values above consume.
+# Not exposed outside the cluster; only the rag api talks to it.
+cnpgDatabase:
+  enabled: true
+  # postgres image with pgvector preinstalled (the rag api needs the vector
+  # extension). The cnpg operator default image already bundles pgvector
+  # (the cloudnative-pg "standard" image ships pgaudit, pgvector and
+  # pg-failover-slots), so leave unset to use it. NOTE: 16-pgvector style
+  # tags do not exist on ghcr.io/cloudnative-pg/postgresql (404) - do not
+  # reinstate one.
+  imageName: ""
+  storageClass: synology-nas-csi-iscsi-retain
+  size: 10Gi
+  instances: 1
+
+traefik:
+  ingressRoute:
+    enabled: true
+    domain: librechat.intra.soernet.ca
+    issuer: letsencrypt-prod-cluster-issuer
+    issuerKind: ClusterIssuer

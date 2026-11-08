@@ -1,0 +1,33 @@
+{{- if .Values.cnpgDatabase.enabled }}
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: librechat-rag-cluster
+spec:
+  instances: {{ .Values.cnpgDatabase.instances }}
+
+  # Optional image override. Unset by default: the cnpg operator's default
+  # ("standard") postgres image already bundles pgvector, which the rag api
+  # needs (see CREATE EXTENSION below and cnpgDatabase in values.yaml)
+  {{- if .Values.cnpgDatabase.imageName }}
+  imageName: {{ .Values.cnpgDatabase.imageName }}
+  {{- end }}
+
+  bootstrap:
+    initdb:
+      # Database name/owner expected by the rag api env configuration in
+      # values.yaml (POSTGRES_DB/POSTGRES_USER). cnpg generates the
+      # librechat-rag-cluster-app Secret holding these owner credentials
+      database: librechat-vectordb
+      owner: rag
+      # The rag api creates its schema and pgvector extension on startup,
+      # which needs the extension available in the image and superuser rights
+      # for CREATE EXTENSION (same pattern as the openwebui chart)
+      postInitTemplateSQL:
+        - ALTER ROLE rag SUPERUSER;
+        - CREATE EXTENSION IF NOT EXISTS vector;
+
+  storage:
+    size: {{ .Values.cnpgDatabase.size }}
+    storageClass: {{ .Values.cnpgDatabase.storageClass }}
+{{- end }}

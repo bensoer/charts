@@ -1,0 +1,6 @@
+dependencies:
+- name: librechat
+  repository: oci://ghcr.io/librechat-ai/librechat-chart
+  version: 3.0.0
+digest: sha256:8403542f7d44b242a888eb0e552a9e23c12f8052c965d34ca0b390f84e7fdf17
+generated: "2026-11-07T16:33:34.913540215-07:00"
