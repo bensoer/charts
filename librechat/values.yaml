@@ -310,13 +310,26 @@ librechat:
       port: 3080
 
   # LibreChat primary datastore. Bundled bitnami MongoDB (auth enabled by the
-  # upstream 3.x chart defaults; MONGO_URI is assembled from the generated
-  # subchart secret by the upstream templates)
+  # upstream 3.x chart defaults; MONGO_URI is assembled by the upstream
+  # templates from this Secret's mongodb-root-password key)
   mongodb:
     enabled: true
     image:
       # Bitnami moved versioned image tags to docker.io/bitnamilegacy on 2025-08-28
       repository: bitnamilegacy/mongodb
+    # Read the root password from the PRE-EXISTING librechat-mongodb Secret
+    # (synced from Parameter Store by the ESO ExternalSecret rendered from
+    # credentialsSecret.eso.subchartSecrets below) instead of rendering a
+    # helm-generated one. REQUIRED with ArgoCD: the bitnami chart falls back
+    # to randAlphaNum when auth.rootPassword is empty, and argocd's offline
+    # helm render cannot lookup the existing Secret - every sync re-renders
+    # a NEW password into the manifest. The mongodb PVC keeps the password
+    # from first init, so the rotated Secret and the stored root user
+    # password drift apart and every login fails with SCRAM storedKey
+    # mismatch. existingSecret pins it to Parameter Store forever.
+    # Key expected by the bitnami chart: mongodb-root-password
+    auth:
+      existingSecret: librechat-mongodb
     persistence:
       storageClass: synology-nas-csi-iscsi-retain
       size: 10Gi
@@ -340,6 +353,12 @@ librechat:
     architecture: standalone
     auth:
       enabled: true
+      # Same ArgoCD/randAlphaNum rotation problem as mongodb above (see the
+      # mongodb.auth.existingSecret comment): read the password from the
+      # ESO-managed librechat-redis Secret instead of a helm-generated one.
+      # Key expected by the bitnami chart (existingSecretPasswordKey default):
+      # redis-password
+      existingSecret: librechat-redis
     master:
       persistence:
         enabled: true
@@ -477,6 +496,20 @@ credentialsSecret:
       AWS_REGION: /k3s-homelab/librechat/s3/region
       AWS_BUCKET_NAME: /k3s-homelab/librechat/s3/bucket
       AWS_ENDPOINT_URL: /k3s-homelab/librechat/s3/endpoint_url
+
+    # PRE-EXISTING Secrets for the bundled bitnami subcharts (mongodb/
+    # redis), rendered as their own ExternalSecrets by the
+    # eso-subchart-secrets template. With auth.existingSecret set above the
+    # charts skip rendering their own Secret and read these instead - the
+    # Secret NAME must match what their secretName helpers resolve, and
+    # the KEYS must match what the charts expect (mongodb-root-password /
+    # redis-password; see the values.yaml comments there for why helm-
+    # generated passwords cannot be used with ArgoCD).
+    subchartSecrets:
+      librechat-mongodb:
+        mongodb-root-password: /k3s-homelab/librechat/credentials/mongodb_root_password
+      librechat-redis:
+        redis-password: /k3s-homelab/librechat/credentials/redis_password
 
 # cnpg postgres Cluster backing the librechat-rag-api (pgvector vector store).
 # cnpg generates the librechat-rag-cluster-app Secret with the owner
