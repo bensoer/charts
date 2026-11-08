@@ -215,6 +215,18 @@ librechat:
           type: streamable-http
           url: https://agenttools.wolfram.com/mcp
 
+        # remote - 24fps motion graphics library (https://24fps.dev/agents).
+        # Free, no auth: search 7000+ AI motion graphics clips (logo reveals,
+        # kinetic typography, launch videos, transitions), read their prompts
+        # and pull open-licensed source code, plus video editor presets
+        # (captions/transitions/effects/layouts). Stateless streamable-http
+        # (verified with a direct initialize + tools/list handshake, no
+        # session needed). Tools: search_clips, get_clip, get_source,
+        # search_editor_assets, get_editor_asset, list_tools.
+        24fps:
+          type: streamable-http
+          url: https://24fps.dev/mcp
+
         # stdio (npx) - kaneo project management, api key from Parameter Store
         kaneo:
           type: stdio
