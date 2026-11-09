@@ -21,10 +21,10 @@ version: 0.1.0
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
-appVersion: "2.47.1"
+appVersion: "2.48.0"
 
 
 dependencies:
   - name: kaneo # The name of the dependent chart
-    version: "2.47.1"            # The version of the dependent chart
+    version: "2.48.0"            # The version of the dependent chart
     repository: "oci://ghcr.io/usekaneo/charts" # The URL of the chart repository
