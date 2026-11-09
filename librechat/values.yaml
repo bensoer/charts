@@ -233,7 +233,7 @@ librechat:
           command: npx
           args:
             - -y
-            - '@kaneo/mcp'
+            - '@kaneo/mcp@0.1.14'
           env:
             KANEO_API_URL: https://kaneo.intra.soernet.ca
             KANEO_API_KEY: '${MCP_KANEO_API_KEY}'
