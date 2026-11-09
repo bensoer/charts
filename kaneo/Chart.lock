@@ -1,6 +1,6 @@
 dependencies:
 - name: kaneo
   repository: oci://ghcr.io/usekaneo/charts
-  version: 2.48.0
-digest: sha256:ef1a5a0674f75398a02ddb04d4413afb8f8c5b3102b6c3a18d36c240a3c0640a
-generated: "2026-11-08T19:11:23.593803242-07:00"
+  version: 2.49.0
+digest: sha256:f4f7b4f1d23e466e641bd0428adfb8bac107baa9e2544fa19108e7173df4c67d
+generated: "2026-11-08T19:13:48.703991309-07:00"
