@@ -16,6 +16,9 @@ librechat:
   # Pin the resource names so the traefik IngressRoute below can target the service
   fullnameOverride: librechat
 
+  image:
+    tag: v0.8.9-rc1
+
   # The app is stateless: sessions/cache live in the bundled Redis below and
   # uploaded files in S3 (fileStrategy: s3), so this can be raised past 1
   # whenever more capacity is needed
