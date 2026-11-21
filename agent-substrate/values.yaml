@@ -1,0 +1,93 @@
+
+
+substrate:
+
+  postgres:
+    # Project database login certificates only when the connection strings use them.
+    clientCertificates:
+      enabled: false
+    # Read the read/write connection string from a pre-created Secret.
+    readWriteConnectionStringSecretRef:
+      name: agent-substrate-cluster-app
+      key: uri
+    # Read the owner connection string from a pre-created Secret.
+    ownerConnectionStringSecretRef:
+      name: agent-substrate-cluster-app
+      key: uri
+    # Roles assumed on each connection. Use distinct roles for installs sharing a database.
+    readWriteRole: app
+    ownerRole: app
+    schema: agentsubstrate
+
+  rustfs:
+    enabled: false
+
+  # ateApi:
+  #   snapshotLocation: s3://pt-agent-substrate-data/kagent/
+
+  preview:
+    - PerTemplateSnapshotLocation
+
+
+  atelet:
+    storageBackend: s3
+
+  objectStore:
+    backend: s3
+    endpoint: ""
+    region: ""
+    pathStyle: false
+    credentialsSecret: ""
+
+  objectStorePlugin:
+    extraEnv:
+      - name: AWS_REGION
+        valueFrom:
+          secretKeyRef:
+            name: agent-substrate-credentials
+            key: AWS_REGION
+
+      # - name: AWS_BUCKET_NAME
+      #   valueFrom:
+      #     secretKeyRef:
+      #       name: agent-substrate-credentials
+      #       key: AWS_BUCKET_NAME
+
+      # - name: AWS_ENDPOINT_URL
+      #   valueFrom:
+      #     secretKeyRef:
+      #       name: agent-substrate-credentials
+      #       key: AWS_ENDPOINT_URL
+
+      - name: AWS_ACCESS_KEY_ID
+        valueFrom:
+          secretKeyRef:
+            name: agent-substrate-credentials
+            key: AWS_ACCESS_KEY_ID
+
+      - name: AWS_SECRET_ACCESS_KEY
+        valueFrom:
+          secretKeyRef:
+            name: agent-substrate-credentials
+            key: AWS_SECRET_ACCESS_KEY
+  
+
+cnpgDatabase:
+  enabled: true
+  storageClass: synology-nas-csi-iscsi-retain
+  size: 10Gi
+  instances: 1
+
+credentialsSecret:
+  eso:
+    enabled: true
+    secretStore:
+      name: aws-use1-parameter-store-cluster-secret-store
+      kind: ClusterSecretStore
+    data:
+      AWS_ACCESS_KEY_ID: /k3s-homelab/agent-substrate/s3/access_key
+      AWS_SECRET_ACCESS_KEY: /k3s-homelab/agent-substrate/s3/secret_key
+      AWS_REGION: /k3s-homelab/agent-substrate/s3/region
+      AWS_BUCKET_NAME: /k3s-homelab/agent-substrate/s3/bucket
+      AWS_ENDPOINT_URL: /k3s-homelab/agent-substrate/s3/endpoint_url
+
