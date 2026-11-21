@@ -12,10 +12,28 @@ kaneo:
         memory: 256Mi
       limits:
         memory: 256Mi
-    
+
+    extraEnv:
+      - name: KANEO_ALLOW_PRIVATE_WEBHOOK_DESTINATIONS
+        value: 'true'
+      - name: S3_FORCE_PATH_STYLE
+        value: 'true'
+      - name: SMTP_HOST
+        value: smtp.sendgrid.net
+      - name: SMTP_PORT
+        value: "465"
+      - name: SMTP_SECURE
+        value: "true"
+      - name: SMTP_FROM
+        value: support@projectterris.com
+
+    extraEnvFrom:
+      - secretRef:
+          name: kaneo-credentials
+
     env:
       clientUrl: https://kaneo.intra.soernet.ca
-      disableRegistration: false
+      disableRegistration: 'false'
       # AUTH_SECRET using an existing one instead
       existingSecret:
         enabled: true
@@ -49,3 +67,18 @@ authSecret:
       name: aws-use1-parameter-store-cluster-secret-store
       kind: ClusterSecretStore
     remoteRefKey: /k3s-homelab/kaneo/credentials/auth_secret
+
+credentialsSecret:
+  eso:
+    enabled: true
+    secretStore:
+      name: aws-use1-parameter-store-cluster-secret-store
+      kind: ClusterSecretStore
+    data:
+      S3_ACCESS_KEY_ID: /k3s-homelab/kaneo/s3/access_key
+      S3_SECRET_ACCESS_KEY: /k3s-homelab/kaneo/s3/secret_key
+      S3_REGION: /k3s-homelab/kaneo/s3/region
+      S3_BUCKET: /k3s-homelab/kaneo/s3/bucket
+      S3_ENDPOINT: /k3s-homelab/kaneo/s3/endpoint_url
+      SMTP_USER: /k3s-homelab/kaneo/smtp/username
+      SMTP_PASSWORD: /k3s-homelab/kaneo/smtp/password
