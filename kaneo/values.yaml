@@ -82,3 +82,7 @@ credentialsSecret:
       S3_ENDPOINT: /k3s-homelab/kaneo/s3/endpoint_url
       SMTP_USER: /k3s-homelab/kaneo/smtp/username
       SMTP_PASSWORD: /k3s-homelab/kaneo/smtp/password
+      # Custom OAuth/OIDC Configuration
+      CUSTOM_OAUTH_CLIENT_ID: /k3s-homelab/kaneo/oauth/client_id
+      CUSTOM_OAUTH_CLIENT_SECRET: /k3s-homelab/kaneo/oauth/client_secret
+      CUSTOM_OAUTH_DISCOVERY_URL: /k3s-homelab/kaneo/oauth/openid_connect_config_url
